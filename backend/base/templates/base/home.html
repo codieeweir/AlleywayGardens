@@ -2,21 +2,54 @@
 
 {% block content %}
 
-<h3> Projects </h3>
+<style>
+    .home-container{
+        display: grid;
+        grid-template-columns: 1fr 3fr;
+    }
+</style>
 
-<div>
+
+
+<div class="home-container">
 
     <div>
-        {% for project in projects %}
+        <h3>Browse Zones</h3>
+        <hr>
 
         <div>
-            <h5>{{project.id}} -- <a href="/project/{{project.id}}"> {{project.name}}</a></h5>
+            <a href="{% url 'home' %}">All</a>
         </div>
 
+        {% for zone in zones %}
+            <div>
+                <a href="{% url 'home' %}?q={{zone.name}}">{{zone.name}}</a>
 
+            </div>
         {% endfor %}
     </div>
 
+   <div>
+
+        <h3> Projects </h3>
+        <hr>
+        <a href="{% url 'create-project' %}"> Create a Project </a>
+
+        <div>
+            {% for project in projects %}
+
+            <div>
+                <span>@{{project.host.username}}</span>
+                <h5><a href="/project/{{project.id}}"> {{project.name}}</a></h5>
+                <p>{{project.description}}</p>
+                <small> {{project.zone.name}}</small>
+                <hr>
+            </div>
+
+
+            {% endfor %}
+        </div>
+   </div>
 
 </div>
 

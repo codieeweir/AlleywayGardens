@@ -58,15 +58,33 @@ def registerPage(request):
 
 # Create your views here.
 def home(request):
-    projects = Project.objects.all()
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+    projects = Project.objects.filter(
+                                      Q(zone__name__icontains=q) |
+                                      Q(name__icontains=q)
+                                      )
 
-    context = {'projects' : projects}
+    zones = Zone.objects.all()
+
+    context = {'projects' : projects, 'zones': zones}
     return  render(request, 'base/home.html' , context)
 
 def project(request, pk):
-
     project = Project.objects.get(id=pk)
-    context = {'project' : project}
+
+    project_messages = project.message_set.all().order_by('-created')
+    participants = project.participants.all()
+
+    if request.method =='POST':
+        message = Message.objects.create(
+            user=request.user,
+            project=project,
+            body=request.POST.get('body')
+        )
+        project.participants.add(request.user)
+        return redirect('project', pk=project.id)
+    
+    context = {'project':project, 'project_messages':project_messages, 'participants':participants}
     return render(request, 'base/projects.html', context)
 
 
@@ -104,7 +122,7 @@ def updateProject(request, pk):
         return HttpResponse("You are not the project host")
 
     if request.method == 'POST':
-        form = ProjectForm(request.POST, instance=room)
+        form = ProjectForm(request.POST, instance=project)
         if form.is_valid():
             form.save()
             return redirect('home')

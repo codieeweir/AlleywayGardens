@@ -2,9 +2,15 @@
     <h1>Alleyway Gardens </h1>
 </a>
 
+<form method="GET" action="{% url 'home' %}">
+    <input type="text" name="q" placeholder="Search Zones..." />
+</form>
+
 
 {% if request.user.is_authenticated %}
 <a href="{% url 'logout' %}"> Log Out?</a>
+<a href="/profile/{{user.id}}"> Profile</a>
 {% else %}
 <a href="{% url 'login' %}"> Log In?</a>
 {% endif %}
+
