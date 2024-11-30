@@ -1,0 +1,23 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<h3> Projects </h3>
+
+<div>
+
+    <div>
+        {% for project in projects %}
+
+        <div>
+            <h5>{{project.id}} -- <a href="/project/{{project.id}}"> {{project.name}}</a></h5>
+        </div>
+
+
+        {% endfor %}
+    </div>
+
+
+</div>
+
+{% endblock content %}
