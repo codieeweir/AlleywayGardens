@@ -6,8 +6,8 @@ from django.db.models import Q
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
-from .models import Project, Zone, Message
-from .forms import ProjectForm
+from .models import Project, Zone, Message, Post, Comment
+from .forms import ProjectForm, PostForm
 
 def loginPage(request):
     page = 'login'
@@ -153,3 +153,37 @@ def deleteMessage(request, pk):
         message.delete()
         return redirect('home')
     return render(request, 'base/delete.html', {'obj' : message})
+
+@login_required(login_url='/login')
+def deletePost(request, pk):
+    post = Post.objects.get(id = pk)
+
+    if request.user != post.user:
+     return HttpResponse("You are not allowed to do this")
+
+    if request.method == 'POST':
+        post.delete()
+        return redirect('home')
+    return render(request, 'base/delete.html', {'obj' : post.title})
+
+
+def forumPost(request):
+    posts = Post.objects.all().order_by('-created')
+
+    context = {'posts':posts}
+    return render(request, 'base/forum.html', context)
+
+
+@login_required(login_url='/login')
+def createPost(request):
+    form = PostForm()
+    if request.method == 'POST':
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.user = request.user
+            post.save()
+            return redirect('forum')
+
+    context= {'form' : form}
+    return render(request, 'base/post_form.html', context)

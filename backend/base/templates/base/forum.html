@@ -1,0 +1,30 @@
+{% extends 'main.html' %} 
+
+{% block content %}
+
+<h2>Community Forum</h2>
+
+<div>
+{% if request.user.is_authenticated %}
+<a href="{% url 'create-post' %}"> Create A Post </a>
+{% endif %}
+
+{% for post in posts %}
+<div>
+    <h3>{{post.title}}</h3>
+    <p>{{post.body}}</p>
+    <h5>Posted by @{{user.username}} {{post.created|timesince}}</h5>
+    <span>{{post.zone}}</span>
+    {% if request.user == post.user %}
+        <a href="{% url 'delete-post' post.id %}"> Delete </a>
+    {%endif%}
+    <hr>
+
+</div>
+{% endfor %}
+
+
+
+</div>
+
+{% endblock content %}

@@ -9,6 +9,16 @@
     }
 </style>
 
-<h1>{{user.username}}'s Profile </h1>
+<h1>{{user.username|capfirst }}'s Profile </h1>
 
+
+<div>
+<h3> Your Current Projects </h3>
+{% for project in projects %}
+<div>
+    <a href="{% url 'project' project.id %}">{{project.name}}</a>
+
+</div>
+{% endfor %}
+</div>
 {% endblock content %}
