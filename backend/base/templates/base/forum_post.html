@@ -1,0 +1,46 @@
+{% extends 'main.html' %} 
+
+{% block content %}
+
+<style>
+    .post-container{
+        display: grid;
+        grid-template-columns: 2fr 2fr;
+    }
+</style>
+
+<h2>Community Forum</h2>
+
+<h1>{{post.title}}</h1>
+<hr>
+<div class="post-container">
+    <div>
+        <p>{{post.body}}</p>
+    </div>
+    <div>
+        <h2>Comments</h2>
+        {% for comment in post_comments %}
+      <div>
+            <small><a href="{% url 'user-profile' comment.user.id %}">@{{comment.user}} </a> {{comment.created|timesince}} ago </small>
+            {% if request.user == comment.user %}
+
+            <a href="{% url 'delete-message' comment.id %}"> Delete </a>
+            {%endif%}
+
+            <p>{{comment.body}}</p>
+
+      </div>
+        {% endfor %}
+
+        {% if request.user.is_authenticated %}
+        <div class="comment-form">
+            <form method="POST" action="">
+            {% csrf_token %}
+            <input type="text" name="body" placeholder="Add Comment..." />
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock content %}

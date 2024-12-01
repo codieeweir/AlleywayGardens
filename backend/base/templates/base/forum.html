@@ -11,9 +11,9 @@
 
 {% for post in posts %}
 <div>
-    <h3>{{post.title}}</h3>
+    <h3><a href="/forum-post/{{post.id}}">{{post.title}}</a></h3>
     <p>{{post.body}}</p>
-    <h5>Posted by @{{user.username}} {{post.created|timesince}}</h5>
+    <h5>Posted by <a href="{% url 'user-profile' post.user.id %}">@{{post.user}} </a> {{post.created|timesince}}</h5>
     <span>{{post.zone}}</span>
     {% if request.user == post.user %}
         <a href="{% url 'delete-post' post.id %}"> Delete </a>

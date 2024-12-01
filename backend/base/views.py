@@ -167,7 +167,7 @@ def deletePost(request, pk):
     return render(request, 'base/delete.html', {'obj' : post.title})
 
 
-def forumPost(request):
+def forum(request):
     posts = Post.objects.all().order_by('-created')
 
     context = {'posts':posts}
@@ -187,3 +187,19 @@ def createPost(request):
 
     context= {'form' : form}
     return render(request, 'base/post_form.html', context)
+
+def forumPost(request, pk):
+    post = Post.objects.get(id=pk)
+    post_comments = post.comment.all().order_by('-created')
+
+    if request.method =='POST':
+        comment = Comment.objects.create(
+            user=request.user,
+            post=post,
+            body=request.POST.get('body')
+        )
+        return redirect('forum-post', pk=post.id)
+
+    
+    context = {'post':post, 'post_comments' : post_comments }
+    return render(request, 'base/forum_post.html', context)
