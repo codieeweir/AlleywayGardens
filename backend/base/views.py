@@ -11,7 +11,7 @@ from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
-from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.tokens import default_token_generator as token_generator
 from .models import Project, Zone, Message, Post, Comment
 from .forms import ProjectForm, PostForm, CustomUserCreationForm
 
@@ -52,20 +52,23 @@ def registerPage(request):
             user.is_active = False
             user.save()
 
+            uid = urlsafe_base64_encode(str(user.pk).encode())
+            token = token_generator.make_token(user)
+
             #send email verification functionality
             current_site = get_current_site(request)
             mail_subject = 'Activate your Account'
             message = render_to_string('base/email_verification.html', {
                 'user' : user,
                 'domain': current_site.domain,
-                'uid' : urlsafe_base64_encode(force_bytes(user.pk)),
-                'token': default_token_generator.make_token(user)
+                'uid' : uid,
+                'token': token
             })
             email = EmailMessage(mail_subject, message, to=[user.email])
             email.send()
 
             messages.success(request, 'An email has been sent for verification to your email address')
-            return redirect('login')
+            return redirect('register')
         else:
             messages.error(request, 'An Error has occurred')
 
@@ -74,25 +77,21 @@ def registerPage(request):
 
     else:
         print(form)
-        messages.error(request, "An Error has occurred")
         
     return render(request, 'base/login_register.html', {'form' : form})
 
-def activate(request, uidb4, token):
+def activate(request, uidb64, token):
     try:
-        uid= force_str(urlsafe_base64_decode(uidb4))
-        user= User.objects.get(pk=uid)
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
 
-    if user is not None and default_token_generator.check_token(user, token):
+    if user is not None and token_generator.check_token(user, token):
         user.is_active = True
-        user.save
+        user.save()
+        return HttpResponse('Your Account has been activated, please return to log in')
 
-        login(request, user)
-
-        message.success(request, 'Your account has been successfully activated!')
-        return redirect('profile')
     else:
         return HttpResponse('Activation link is invalid!')
 
