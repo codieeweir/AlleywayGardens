@@ -1,13 +1,19 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.tokens import default_token_generator
 from .models import Project, Zone, Message, Post, Comment
-from .forms import ProjectForm, PostForm
+from .forms import ProjectForm, PostForm, CustomUserCreationForm
 
 def loginPage(request):
     page = 'login'
@@ -36,24 +42,59 @@ def logoutUser(request):
     return redirect('home')
 
 def registerPage(request):
-    form = UserCreationForm()
+    form = CustomUserCreationForm()
 
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.username = user.username.lower()
+            user.is_active = False
             user.save()
-            login(request, user)
-            return redirect('home')
 
+            #send email verification functionality
+            current_site = get_current_site(request)
+            mail_subject = 'Activate your Account'
+            message = render_to_string('base/email_verification.html', {
+                'user' : user,
+                'domain': current_site.domain,
+                'uid' : urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': default_token_generator.make_token(user)
+            })
+            email = EmailMessage(mail_subject, message, to=[user.email])
+            email.send()
+
+            messages.success(request, 'An email has been sent for verification to your email address')
+            return redirect('login')
         else:
-            print(form)
-            messages.error(request, "An Error has occurred")
+            messages.error(request, 'An Error has occurred')
+
+           # login(request, user)
+           # return redirect('home')
+
+    else:
+        print(form)
+        messages.error(request, "An Error has occurred")
         
     return render(request, 'base/login_register.html', {'form' : form})
 
+def activate(request, uidb4, token):
+    try:
+        uid= force_str(urlsafe_base64_decode(uidb4))
+        user= User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
 
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save
+
+        login(request, user)
+
+        message.success(request, 'Your account has been successfully activated!')
+        return redirect('profile')
+    else:
+        return HttpResponse('Activation link is invalid!')
 
 
 # Create your views here.
@@ -93,8 +134,11 @@ def userProfile(request, pk):
     projects = user.project_set.all()
     project_messages = user.message_set.all()
     zones = Zone.objects.all()
+    posts = user.post_set.all()
+    comments = user.comment.all()
+    
 
-    context = {'user': user, 'projects': projects, 'project_messages' : project_messages, 'zones' :zones }
+    context = {'user': user, 'projects': projects, 'project_messages' : project_messages, 'zones' :zones , 'posts' : posts, 'comments' : comments}
     return render(request, 'base/profile.html', context)
 
 
@@ -150,8 +194,9 @@ def deleteMessage(request, pk):
      return HttpResponse("You are not allowed to do this")
 
     if request.method == 'POST':
+        project_id = message.project.id
         message.delete()
-        return redirect('home')
+        return redirect('project', pk = project_id)
     return render(request, 'base/delete.html', {'obj' : message})
 
 @login_required(login_url='/login')
@@ -163,8 +208,8 @@ def deletePost(request, pk):
 
     if request.method == 'POST':
         post.delete()
-        return redirect('home')
-    return render(request, 'base/delete.html', {'obj' : post.title})
+        return redirect('forum')
+    return render(request, 'base/delete.html', {'obj' : post})
 
 
 def forum(request):
@@ -172,21 +217,6 @@ def forum(request):
 
     context = {'posts':posts}
     return render(request, 'base/forum.html', context)
-
-
-@login_required(login_url='/login')
-def createPost(request):
-    form = PostForm()
-    if request.method == 'POST':
-        form = PostForm(request.POST)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.user = request.user
-            post.save()
-            return redirect('forum')
-
-    context= {'form' : form}
-    return render(request, 'base/post_form.html', context)
 
 def forumPost(request, pk):
     post = Post.objects.get(id=pk)
@@ -203,3 +233,49 @@ def forumPost(request, pk):
     
     context = {'post':post, 'post_comments' : post_comments }
     return render(request, 'base/forum_post.html', context)
+
+
+@login_required(login_url='/login')
+def createPost(request):
+    form = PostForm()
+    if request.method == 'POST':
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.user = request.user
+            post.save()
+            return redirect('forum')
+
+    context= {'form' : form}
+    return render(request, 'base/post_form.html', context)
+
+@login_required(login_url='/login')
+def updatePost(request, pk):
+    post = Post.objects.get(id = pk)
+    form = PostForm(instance=post)
+
+    if request.user != post.user:
+        return HttpResponse("You are not the project host")
+
+    if request.method == 'POST':
+        form = PostForm(request.POST, instance=post)
+        if form.is_valid():
+            form.save()
+            return redirect('forum')
+
+    context = {'form' : form}
+    return render(request, 'base/post_form.html', context)
+
+@login_required(login_url='/login')
+def deleteComment(request, pk):
+    comment = Comment.objects.get(id = pk)
+
+    if request.user != comment.user:
+     return HttpResponse("You are not allowed to do this")
+
+    if request.method == 'POST':
+        post_id = comment.post.id
+        comment.delete()
+        return redirect('forum-post', pk = post_id)
+    return render(request, 'base/delete.html', {'obj' : comment})
+

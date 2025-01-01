@@ -13,10 +13,11 @@
 <div>
     <h3><a href="/forum-post/{{post.id}}">{{post.title}}</a></h3>
     <p>{{post.body}}</p>
-    <h5>Posted by <a href="{% url 'user-profile' post.user.id %}">@{{post.user}} </a> {{post.created|timesince}}</h5>
+    <h5>Posted by <a href="{% url 'user-profile' post.user.id %}">@{{post.user}} </a> {{post.created|timesince}} ago</h5>
     <span>{{post.zone}}</span>
+    <h5> Total Comments: {{post.comment.all.count}} </h5>
     {% if request.user == post.user %}
-        <a href="{% url 'delete-post' post.id %}"> Delete </a>
+        <a href="{% url 'update-post' post.id %}"> Update Post </a>
     {%endif%}
     <hr>
 

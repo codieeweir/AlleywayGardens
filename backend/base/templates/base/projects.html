@@ -11,19 +11,21 @@
 </style>
 
   <h1>{{project.name}}</h1>
-  <h3> Project Hosted by @{{project.host.username}}</h3>
+  <h3> Project Hosted by <a href="{% url 'user-profile' project.host.id %}">@{{project.host.username}} </a></h3>
   <div class="project-container">
   <div>
     <p>{{project.description}}</p>
+    {% if request.user == project.host %}
     <a href="{% url 'delete-project' project.id %}"> Delete This Project? </a>
     <a href="{% url 'update-project' project.id %}"> Update This Project? </a>
+    {%endif%}
   </div>
   <div>
     <div class="comment-wrapper">
       <h3>Converstaion</h3>
       {% for message in project_messages%}
       <div>
-        <small>@{{message.user}} {{message.created|timesince}} ago </small>
+        <small><a href="{% url 'user-profile' message.user.id %}">@{{message.user}}</a> {{message.created|timesince}} ago </small>
         {% if request.user == message.user %}
         <a href="{% url 'delete-message' message.id %}"> Delete </a>
         {%endif%}
@@ -48,7 +50,7 @@
     {% for user in participants %}
 
     <div>
-      <p>@{{user.username}}</p>
+      <p><a href="{% url 'user-profile' user.id %}">@{{user.username}}</a></p>
     </div>
 
     {% endfor %}

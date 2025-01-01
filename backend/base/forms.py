@@ -1,5 +1,15 @@
 from django.forms import ModelForm
-from .models import Project, Post, Zone
+from .models import Project, Post, User
+from django.contrib.auth.forms import UserCreationForm
+from django import forms
+
+
+class CustomUserCreationForm(UserCreationForm):
+    email = forms.EmailField(required=True, label='Email Address')
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password1', 'password2']
 
 class ProjectForm(ModelForm):
     class Meta:
