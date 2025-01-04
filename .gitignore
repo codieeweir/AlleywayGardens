@@ -2,5 +2,4 @@
 
 # dependencies
 /env/
-/backend/backend/__pycache__/
-/backend/base/__pycache__/
+__pycache__/
