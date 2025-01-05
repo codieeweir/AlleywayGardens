@@ -1,4 +1,5 @@
 {% extends 'main.html' %}
+{% load static %}
 
 {% block content %}
 
@@ -42,6 +43,9 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
 
 <div class="home-container">
     <div>
@@ -54,7 +58,7 @@
 
         {% for zone in zones %}
             <div>
-                <a href="{% url 'home' %}?q={{zone.name}}">{{zone.name}}</a>
+                <a href="{% url 'home' %}?q={{zone.name}}"{{zone.name}} class="zone-link" data-zone-name="{{zone.name}}">{{zone.name}}</a>
             </div>
         {% endfor %}
     </div>
@@ -64,6 +68,9 @@
         <hr>
         <div id="map" class="map-container"></div>
     </div>
+
+    <script> const currentZone = "{{ request.GET.q }}" ; </script>
+    <script src="{% static 'js/map.js' %}"></script>
 
     <div class="projects-container">
         <h3>Projects</h3>
@@ -83,13 +90,5 @@
         </div>
     </div>
 </div>
-
-<script>
-    var map = L.map('map').setView([54.597, -5.930], 13);  // Coordinates for Belfast
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-</script>
 
 {% endblock content %}
