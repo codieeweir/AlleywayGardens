@@ -61,13 +61,8 @@ map.on('draw:created', function (e) {
 
 function handleMarker(marker){
     var formHtml = `
-    <label for="name">Enter Name:</label>
-    <input type="text" id="name" placeholder="Marker Name">
-        <br>
-        <label for="caption">Enter Caption:</label>
-        <textarea id="caption" placeholder="Marker Caption"></textarea>
-        <br>
-        <button id="saveMarker">Save</button>
+    <h3> Located a possible project area?</h3>
+    <a href="/create-project"> Create new project here </a>
     `;
 
     var popup = marker.bindPopup(formHtml).openPopup();
