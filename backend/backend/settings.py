@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'base',
+    'django.contrib.gis',
 ]
 
 MIDDLEWARE = [
@@ -85,7 +86,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
      'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'alleyway_gardens',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
@@ -152,3 +153,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'alleywaygardens@gmail.com'
 EMAIL_HOST_PASSWORD = 'azku lggq oifv uizm'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+GDAL_LIBRARY_PATH = r'C:\Users\court\OneDrive\Desktop\Alleyway Gardens Project\AlleywayGardens\env\Lib\site-packages\osgeo\gdal.dll'
+GEOS_LIBRARY_PATH = r'C:\Users\court\OneDrive\Desktop\Alleyway Gardens Project\AlleywayGardens\env\Lib\site-packages\osgeo\geos_c.dll'
