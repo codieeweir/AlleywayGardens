@@ -12,7 +12,7 @@ from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator as token_generator
-from .models import Project, Zone, Message, Post, Comment
+from .models import Project, Zone, Message, Post, Comment, Location
 from .forms import ProjectForm, PostForm, CustomUserCreationForm
 
 def loginPage(request):
@@ -95,8 +95,6 @@ def activate(request, uidb64, token):
     else:
         return HttpResponse('Activation link is invalid!')
 
-
-# Create your views here.
 def home(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
     projects = Project.objects.filter(
@@ -114,6 +112,11 @@ def project(request, pk):
 
     project_messages = project.message_set.all().order_by('-created')
     participants = project.participants.all()
+    project_location = project.locations.all()
+
+    location_coordinates  = [
+        {'x': loc.location.x, 'y' : loc.location.y} for loc in project_location
+    ]
 
     if request.method =='POST':
         message = Message.objects.create(
@@ -124,7 +127,7 @@ def project(request, pk):
         project.participants.add(request.user)
         return redirect('project', pk=project.id)
     
-    context = {'project':project, 'project_messages':project_messages, 'participants':participants}
+    context = {'project':project, 'project_messages':project_messages, 'participants':participants, 'project_location': project_location, 'location_coordinates': location_coordinates}
     return render(request, 'base/projects.html', context)
 
 
