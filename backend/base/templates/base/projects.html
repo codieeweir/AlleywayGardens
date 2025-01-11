@@ -53,9 +53,29 @@
   <div class="project-container">
   <div>
     <p>{{project.description}}</p>
-    <div id = 'map' class="map-container">
-    </div>
 
+    <div id = 'map' class="map-container">
+
+      {{ coordinates|json_script:"coordinates_json" }}
+      <p> {{coordinates}} </p>
+      <!-- <script src="{% static 'js/project_map.js' %}"></script> -->
+      <script>
+
+        let coordinates = JSON.parse(document.getElementById("coordinates_json").textContent)
+
+        var map = L.map('map').setView([coordinates[0].y, coordinates[0].x], 15); // defaultd coords atm for test project
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        coordinates.forEach(coordinate => {
+        L.marker([coordinate.y, coordinate.x]).addTo(map)
+
+        })
+      </script>
+
+    </div>
     <hr>
     {% if request.user == project.host %}
     <a href="{% url 'delete-project' project.id %}"> Delete This Project? </a>
@@ -102,7 +122,6 @@
   </div>
 </div>
 
-<script> const currentZone = "{{ request.GET.q }}" ; </script>
 <script src="{% static 'js/project_map.js' %}"></script>
 
 {% endblock content %}

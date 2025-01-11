@@ -114,7 +114,7 @@ def project(request, pk):
     participants = project.participants.all()
     project_location = project.locations.all()
 
-    location_coordinates  = [
+    coordinates  = [
         {'x': loc.location.x, 'y' : loc.location.y} for loc in project_location
     ]
 
@@ -127,7 +127,7 @@ def project(request, pk):
         project.participants.add(request.user)
         return redirect('project', pk=project.id)
     
-    context = {'project':project, 'project_messages':project_messages, 'participants':participants, 'project_location': project_location, 'location_coordinates': location_coordinates}
+    context = {'project':project, 'project_messages':project_messages, 'participants':participants, 'project_location': project_location, 'coordinates': coordinates}
     return render(request, 'base/projects.html', context)
 
 
