@@ -104,13 +104,13 @@ def home(request):
                                       )
 
     zones = Zone.objects.all()
-    projectMarker = Project.objects.all()
-    locations = [
-        {'name' : project.name, 'lat' : project.location.y, 'lng': project.location.x}
-        for project in projectMarker if project.location
+
+    coordinates  = [
+        {'id': loc.id, 'name': loc.name , 'description': loc.description, 'x': loc.location.x, 'y' : loc.location.y} for loc in projects if loc.location
     ]
+   
     # Render template with locations embedded
-    context = {'projects': projects, 'zones': zones, 'locations': locations}
+    context = {'projects': projects, 'zones': zones, 'coordinates': coordinates}
     return render(request, 'base/home.html', context)
 
 
@@ -120,6 +120,7 @@ def project(request, pk):
     project_messages = project.message_set.all().order_by('-created')
     participants = project.participants.all()
     project_location = project.location
+    project_zone = project.zone
 
     coordinates  = [
         {'x': project_location.x, 'y' : project_location.y}
@@ -134,7 +135,7 @@ def project(request, pk):
         project.participants.add(request.user)
         return redirect('project', pk=project.id)
     
-    context = {'project':project, 'project_messages':project_messages, 'participants':participants, 'project_location': project_location, 'coordinates': coordinates}
+    context = {'project':project, 'project_zone' : project_zone, 'project_messages':project_messages, 'participants':participants, 'project_location': project_location, 'coordinates': coordinates}
     return render(request, 'base/projects.html', context)
 
 

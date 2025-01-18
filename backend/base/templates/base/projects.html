@@ -15,13 +15,15 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 10px;
+
   }
 
   .message-item {
     border: 1px solid #ddd;
     padding: 10px;
     border-radius: 5px;
-    background-color: #f9f9f9;
+    background-color: #c7e6c0;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   }
 
   .comment-form input {
@@ -49,7 +51,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 
   <h1>{{project.name}}</h1>
-  <h3> Project Hosted by <a href="{% url 'user-profile' project.host.id %}">@{{project.host.username}} </a></h3>
+  <h3> Project Hosted by <a href="{% url 'user-profile' project.host.id %}">@{{project.host.username}} </a> in {{project.zone}}</h3>
   <div class="project-container">
   <div>
     <p>{{project.description}}</p>

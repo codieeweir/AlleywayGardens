@@ -17,7 +17,7 @@
 
     .projects-container {
         padding: 20px;
-        background-color: #f9f9f9;
+        background-color: #d9e4c9;
         border-radius: 8px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
@@ -66,10 +66,15 @@
     <div>
         <h3>Explore Belfast</h3>
         <hr>
+        <p>Mark a location on the map to create a project</p>
         <div id="map" class="map-container"></div>
     </div>
+
+    {{ coordinates|json_script:"coordinates_json" }}
     <script> const currentZone = "{{ request.GET.q }}" ; </script>
     <script>
+        let coordinates = JSON.parse(document.getElementById("coordinates_json").textContent)
+
         const zoneCoordinates = {
             'North Belfast': {
                 centre: [54.630, -5.930],
@@ -95,9 +100,24 @@
                 const zoneData = zoneCoordinates[currentZone];
                 map.setView(zoneData.centre, zoneData.zoom)
             }
+            
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
+
+            coordinates.forEach(coordinate => {
+            const { y , x , name , description, id } = coordinate;
+            
+            let marker = L.marker([y,x]).addTo(map);
+
+            marker.bindPopup(
+                `
+                <h3>${name}</h3>
+                <p>${description}</p>
+                <a href = "/project/${id}"> Check out this project </a>
+                `
+            )
+            })
 
             var drawnItems = new L.FeatureGroup();
             map.addLayer(drawnItems);
@@ -148,7 +168,7 @@
     <div class="projects-container">
         <h3>Projects</h3>
         <hr>
-        <a href="{% url 'create-project' %}">Create a Project</a>
+        <!-- <a href="{% url 'create-project' %}">Create a Project</a> -->
 
         <div>
             {% for project in projects %}
