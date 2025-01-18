@@ -1,14 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.gis.db import models
-
-
-class Location(models.Model):
-    project = models.ForeignKey('Project', on_delete=models.SET_NULL, null=True, blank=True, related_name="locations")
-    location = models.PointField(srid=4326)
-
-    def __str__(self):
-        return str(self.location)
+from django.contrib.gis.geos import Point
 
 
 class Zone(models.Model):
@@ -24,6 +17,7 @@ class Project(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(null=True, blank= True)
     participants = models.ManyToManyField(User, related_name='participants', blank=True) 
+    location = models.PointField(srid=4326, null=True, blank=True, default=Point(-5.93012, 54.5973))
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
 

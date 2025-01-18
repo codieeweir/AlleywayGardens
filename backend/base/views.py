@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.contrib.gis.geos import Point
 from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
@@ -12,7 +13,7 @@ from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator as token_generator
-from .models import Project, Zone, Message, Post, Comment, Location
+from .models import Project, Zone, Message, Post, Comment
 from .forms import ProjectForm, PostForm, CustomUserCreationForm
 
 def loginPage(request):
@@ -103,19 +104,25 @@ def home(request):
                                       )
 
     zones = Zone.objects.all()
+    projectMarker = Project.objects.all()
+    locations = [
+        {'name' : project.name, 'lat' : project.location.y, 'lng': project.location.x}
+        for project in projectMarker if project.location
+    ]
+    # Render template with locations embedded
+    context = {'projects': projects, 'zones': zones, 'locations': locations}
+    return render(request, 'base/home.html', context)
 
-    context = {'projects' : projects, 'zones': zones}
-    return  render(request, 'base/home.html' , context)
 
 def project(request, pk):
     project = Project.objects.get(id=pk)
 
     project_messages = project.message_set.all().order_by('-created')
     participants = project.participants.all()
-    project_location = project.locations.all()
+    project_location = project.location
 
     coordinates  = [
-        {'x': loc.location.x, 'y' : loc.location.y} for loc in project_location
+        {'x': project_location.x, 'y' : project_location.y}
     ]
 
     if request.method =='POST':
@@ -147,12 +154,22 @@ def userProfile(request, pk):
 
 @login_required(login_url='/login')
 def createProject(request):
-    form = ProjectForm()
+    
+    location = request.GET.get('location')
+    location_data = {'location': location} if location else {}
+    
+    form = ProjectForm(initial=location_data)
+    
     if request.method == 'POST':
         form = ProjectForm(request.POST)
         if form.is_valid():
             project = form.save(commit=False)
             project.host = request.user
+
+            if location:
+                lat, lng = map(float, location.split(','))
+                project.location = Point(lng,lat)
+
             project.save()
             return redirect('home')
 

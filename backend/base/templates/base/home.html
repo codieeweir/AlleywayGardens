@@ -123,31 +123,23 @@
 
                 if(layer instanceof L.Marker){
                     handleMarker(layer);
-                } else {
-
-                    handleShape(layer);
                 }
             });
 
-
             function handleMarker(marker){
+
+                var lat = marker.getLatLng().lat
+                var lng = marker.getLatLng().lng
+                var location = `${lat}, ${lng}`;
+
                 var formHtml = `
                 <h3> Located a possible project area?</h3>
-                <a href="/create-project"> Create new project here </a>
+                <a href="/create-project?location=${location}">Create new project here</a>
                 `;
 
-                var popup = marker.bindPopup(formHtml).openPopup();
+                var popup = marker.bindPopup(formHtml).openPopup()
 
-                document.getElementById('saveMarker').addEventListener('click', function () {
-                    var name = document.getElementById('name').value;
-                    var caption = document.getElementById('caption').value;
-
-                    marker.setPopupContent(`
-                        <strong>${name}</strong><br>
-                        ${caption}
-                    `);
-
-                });
+                
             }
     </script>
 

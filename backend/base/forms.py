@@ -2,6 +2,7 @@ from django.forms import ModelForm
 from .models import Project, Post, User
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
+from django.contrib.gis import forms
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -15,7 +16,8 @@ class ProjectForm(ModelForm):
     class Meta:
         model = Project
         fields = '__all__'
-        exclude = ['host']
+        exclude = ['host', 'location']
+
 
 class PostForm(ModelForm):
     class Meta:
