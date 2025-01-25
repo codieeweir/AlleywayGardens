@@ -1,187 +1,269 @@
-{% extends 'main.html' %}
-{% load static %}
-
-{% block content %}
+a{% extends 'main.html' %} {% load static %} {% block content %}
 
 <style>
-    .home-container {
-        display: grid;
-        grid-template-columns: 0.5fr 3fr 1fr; 
-        gap: 20px; 
-    }
+  .home-container {
+    display: grid;
+    grid-template-columns: 0.5fr 3fr 1fr;
+    gap: 20px;
+  }
 
-    .map-container {
-        width: 100%;
-        height: 600px; 
-    }
+  .map-container {
+    width: 100%;
+    height: 600px;
+  }
 
-    .projects-container {
-        padding: 20px;
-        background-color: #d9e4c9;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
+  .projects-container {
+    padding: 20px;
+    background-color: #d9e4c9;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
 
-    .project-item {
-        margin-bottom: 20px;
-    }
+  .project-item {
+    margin-bottom: 20px;
+  }
 
-    .project-item h4 {
-        margin: 0;
-    }
+  .project-item h4 {
+    margin: 0;
+  }
 
-    .project-item p {
-        margin: 10px 0;
-    }
+  .project-item p {
+    margin: 10px 0;
+  }
 
-    .project-item hr {
-        margin-top: 15px;
-    }
-
+  .project-item hr {
+    margin-top: 15px;
+  }
 </style>
 
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+/>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"
+/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 
-
 <div class="home-container">
-    <div>
-        <h3>Browse Zones</h3>
-        <hr>
-
-        <div>
-            <a href="{% url 'home' %}">All</a>
-        </div>
-
-        {% for zone in zones %}
-            <div>
-                <a href="{% url 'home' %}?q={{zone.name}}"{{zone.name}} class="zone-link" data-zone-name="{{zone.name}}">{{zone.name}}</a>
-            </div>
-        {% endfor %}
-    </div>
+  <div>
+    <h3>Browse Zones</h3>
+    <hr />
 
     <div>
-        <h3>Explore Belfast</h3>
-        <hr>
-        <p>Mark a location on the map to create a project</p>
-        <div id="map" class="map-container"></div>
+      <a href="{% url 'home' %}">All</a>
     </div>
 
-    {{ coordinates|json_script:"coordinates_json" }}
-    <script> const currentZone = "{{ request.GET.q }}" ; </script>
-    <script>
-        let coordinates = JSON.parse(document.getElementById("coordinates_json").textContent)
+    {% for zone in zones %}
+    <div>
+      <a
+        href="{% url 'home' %}?q={{zone.name}}"
+        {{zone.name}}
+        class="zone-link"
+        data-zone-name="{{zone.name}}"
+        >{{zone.name}}</a
+      >
+    </div>
+    {% endfor %}
+  </div>
 
-        const zoneCoordinates = {
-            'North Belfast': {
-                centre: [54.630, -5.930],
-                zoom: 13
-            },
-            'South Belfast': {
-                centre: [54.560, -5.930],
-                zoom: 13
-            },
-            'East Belfast': {
-                centre: [54.597, -5.860],
-                zoom: 13
-            },
-            'West Belfast': {
-                centre: [54.597, -5.990],
-                zoom: 13
-            }
+  <div>
+    <h3>Explore Belfast</h3>
+    <hr />
+    <p>Mark a location on the map to create a project</p>
+    <div id="map" class="map-container"></div>
+  </div>
+
+  {{ coordinates|json_script:"coordinates_json" }}
+  <script>
+    const currentZone = "{{ request.GET.q }}";
+  </script>
+  <script>
+    let coordinates = JSON.parse(
+      document.getElementById("coordinates_json").textContent
+    );
+
+    //Creating the functionality for the map filtering
+    const zoneCoordinates = {
+      "North Belfast": {
+        centre: [54.63, -5.93],
+        zoom: 13,
+      },
+      "South Belfast": {
+        centre: [54.56, -5.93],
+        zoom: 13,
+      },
+      "East Belfast": {
+        centre: [54.597, -5.86],
+        zoom: 13,
+      },
+      "West Belfast": {
+        centre: [54.597, -5.99],
+        zoom: 13,
+      },
+    };
+
+    // Map creation with the filtering applied
+    var map = L.map("map").setView([54.597, -5.93], 12);
+
+    if (currentZone && zoneCoordinates[currentZone]) {
+      const zoneData = zoneCoordinates[currentZone];
+      map.setView(zoneData.centre, zoneData.zoom);
+    }
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+
+    //Green Space layer on the map API call and addition
+    var greenSpaceLayer = L.layerGroup();
+
+    fetch(
+      "https://services7.arcgis.com/rVwbcvflURVxkV6s/arcgis/rest/services/Greenspace_3_view/FeatureServer/4/query?where=1%3D1&outFields=*&outSR=4326&f=geojson"
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        L.geoJSON(data).addTo(greenSpaceLayer);
+      })
+      .catch((error) =>
+        console.error("Error fetching greenspace data:", error)
+      );
+
+    // greenspace toggle functionality
+    var toggleControl = L.control({ position: "topright" });
+    toggleControl.onAdd = function (map) {
+      var div = L.DomUtil.create(
+        "div",
+        "leaflet-bar leaflet-control leaflet-control-custom"
+      );
+      div.innerHTML =
+        '<input type="checkbox" id="toggleGreenSpace"> Show Green Spaces';
+      div.style.backgroundColor = "white";
+      div.style.padding = "5px";
+      div.style.cursor = "pointer";
+
+      L.DomEvent.on(div, "change", function (e) {
+        if (e.target.checked) {
+          map.addLayer(greenSpaceLayer);
+        } else {
+          map.removeLayer(greenSpaceLayer);
         }
+      });
 
-            var map = L.map('map').setView([54.597, -5.930], 12);
+      return div;
+    };
+    toggleControl.addTo(map);
 
-            if (currentZone && zoneCoordinates[currentZone]) {
-                const zoneData = zoneCoordinates[currentZone];
-                map.setView(zoneData.centre, zoneData.zoom)
-            }
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
+    // Adding the Markers to the main map
+    coordinates.forEach((coordinate) => {
+      const { y, x, name, description, id } = coordinate;
 
-            coordinates.forEach(coordinate => {
-            const { y , x , name , description, id } = coordinate;
-            
-            let marker = L.marker([y,x]).addTo(map);
+      let marker = L.marker([y, x]).addTo(map);
 
-            marker.bindPopup(
-                `
+      marker.bindPopup(
+        `
                 <h3>${name}</h3>
                 <p>${description}</p>
                 <a href = "/project/${id}"> Check out this project </a>
                 `
-            )
-            })
+      );
+    });
 
-            var drawnItems = new L.FeatureGroup();
-            map.addLayer(drawnItems);
+    // drawn items working area
+    var drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
 
-            var drawControl = new L.Control.Draw({
-                edit: {
-                    featureGroup: drawnItems
-                },
-                draw: {
-                    polygon: true,
-                    polyline: true,
-                    rectangle: true,
-                    circle: true,
-                    marker: true
-                }
-            });
-            map.addControl(drawControl);
+    var drawControl = new L.Control.Draw({
+      edit: {
+        featureGroup: drawnItems,
+      },
+      draw: {
+        polygon: {
+          allowIntersection: false,
+          showArea: true,
+          shapeOptions: {
+            color: "#4e8a67",
+          },
+          repeatMode: false,
+        },
+        polyline: false,
+        rectangle: false,
+        circle: false,
+        circlemarker: false,
+        marker: true,
+      },
+    });
+    map.addControl(drawControl);
 
-            map.on('draw:created', function (e) {
-                var layer = e.layer;
-                drawnItems.addLayer(layer);
+    map.on("draw:created", function (e) {
+      var layer = e.layer;
+      drawnItems.addLayer(layer);
 
+      if (layer instanceof L.Marker) {
+        handleMarker(layer);
+      } else if (layer instanceof L.Polygon) {
+        handleGeometry(layer);
+      }
+    });
 
-                if(layer instanceof L.Marker){
-                    handleMarker(layer);
-                }
-            });
+    //Functions to make this all work
+    function handleMarker(marker) {
+      var lat = marker.getLatLng().lat;
+      var lng = marker.getLatLng().lng;
+      var location = `${lat}, ${lng}`;
 
-            function handleMarker(marker){
-
-                var lat = marker.getLatLng().lat
-                var lng = marker.getLatLng().lng
-                var location = `${lat}, ${lng}`;
-
-                var formHtml = `
+      var formHtml = `
                 <h3> Located a possible project area?</h3>
                 <a href="/create-project?location=${location}">Create new project here</a>
                 `;
 
-                var popup = marker.bindPopup(formHtml).openPopup()
+      var popup = marker.bindPopup(formHtml).openPopup();
+    }
 
-                
-            }
-    </script>
+    function handleGeometry(layer) {
+      var geometry = layer.toGeoJSON().geometry;
+      var geomtryJson = JSON.stringify(geometry);
 
-    <!-- <script src="{% static 'js/map.js' %}"></script> -->
+      var formHtml = `
+            <h3> Define this area as a projects location? </h3>
+            <a href= "/create-project?geometry=${encodeURIComponent(
+              geomtryJson
+            )}">Create Project Here </a>
 
-    <div class="projects-container">
-        <h3>Projects</h3>
-        <hr>
-        <!-- <a href="{% url 'create-project' %}">Create a Project</a> -->
+        `;
 
-        <div>
-            {% for project in projects %}
-                <div class="project-item">
-                    <h4><a href="/project/{{project.id}}">{{project.name}}</a></h4>
-                    <h5>Created by <a href="{% url 'user-profile' project.host.id %}">@{{project.host.username}}</a>  {{project.created|timesince}} ago</h5>
-                    <p>{{project.description}}</p>
-                    <small>{{project.zone.name}}</small>
-                    <hr>
-                </div>
-            {% endfor %}
-        </div>
+      layer.bindPopup(formHtml).openPopup();
+    }
+  </script>
+
+  <!-- <script src="{% static 'js/map.js' %}"></script> -->
+
+  <div class="projects-container">
+    <h3>Projects</h3>
+    <hr />
+    <!-- <a href="{% url 'create-project' %}">Create a Project</a> -->
+
+    <div>
+      {% for project in projects %}
+      <div class="project-item">
+        <h4><a href="/project/{{project.id}}">{{project.name}}</a></h4>
+        <h5>
+          Created by
+          <a href="{% url 'user-profile' project.host.id %}"
+            >@{{project.host.username}}</a
+          >
+          {{project.created|timesince}} ago
+        </h5>
+        <p>{{project.description}}</p>
+        <small>{{project.zone.name}}</small>
+        <hr />
+      </div>
+      {% endfor %}
     </div>
+  </div>
 </div>
 
 {% endblock content %}

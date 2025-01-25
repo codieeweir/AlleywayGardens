@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.gis.db import models
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point, GEOSGeometry
 
 
 class Zone(models.Model):
@@ -18,6 +18,7 @@ class Project(models.Model):
     description = models.TextField(null=True, blank= True)
     participants = models.ManyToManyField(User, related_name='participants', blank=True) 
     location = models.PointField(srid=4326, null=True, blank=True, default=Point(-5.93012, 54.5973))
+    geometry = models.GeometryField(srid=4326, null=True, blank=True)
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
 
