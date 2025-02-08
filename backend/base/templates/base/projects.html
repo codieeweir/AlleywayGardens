@@ -1,8 +1,4 @@
-
-{% extends 'main.html' %} 
-{% load static %}
-
-{% block content %}
+{% extends 'main.html' %} {% load static %} {% block content %}
 
 <style>
   .project-container {
@@ -15,7 +11,6 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 10px;
-
   }
 
   .message-item {
@@ -37,68 +32,115 @@
   .map-container {
     margin-top: 20px;
     width: 100%;
-    height: 600px; 
-    border: 1px solid #ccc; 
+    height: 600px;
+    border: 1px solid #ccc;
     border-radius: 5px;
-    background-color: #eaeaea; 
+    background-color: #eaeaea;
   }
-  
 </style>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+/>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"
+/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 
-  <h1>{{project.name}}</h1>
-  <h3> Project Hosted by <a href="{% url 'user-profile' project.host.id %}">@{{project.host.username}} </a> in {{project.zone}}</h3>
-  <div class="project-container">
+<h1>{{project.name}}</h1>
+<h3>
+  Project Hosted by
+  <a href="{% url 'user-profile' project.host.id %}"
+    >@{{project.host.username}}
+  </a>
+  in {{project.zone}}
+</h3>
+<div class="project-container">
   <div>
     <p>{{project.description}}</p>
+    <p>{{coordinates}}</p>
+    <p>{{ shape }}</p>
+    {{ shape|json_script:"shape_json" }}
+    <div id="map" class="map-container">
+      {{ coordinates|json_script:"coordinates_json" }} {{
+      shape|json_script:"shape_json" }}
 
-    <div id = 'map' class="map-container">
-
-      {{ coordinates|json_script:"coordinates_json" }}
-      <p> {{coordinates}} </p>
       <!-- <script src="{% static 'js/project_map.js' %}"></script> -->
       <script>
+        let shape = JSON.parse(
+          document.getElementById("shape_json").textContent
+        );
 
-        let coordinates = JSON.parse(document.getElementById("coordinates_json").textContent)
+        if (typeof shape === "string") {
+          shape = JSON.parse(shape);
+        }
 
-        var map = L.map('map').setView([coordinates[0].y, coordinates[0].x], 15); // defaultd coords atm for test project
+        let coordinates = JSON.parse(
+          document.getElementById("coordinates_json").textContent
+        );
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        let geoJsonFeature = {
+          type: "Feature",
+          geometry: shape,
+          properties: {},
+        };
+
+        console.log("GeoJSON Feature:", geoJsonFeature);
+
+        var mapContainer = document.getElementById("map");
+        if (mapContainer._leaflet_id != null) {
+          mapContainer.innerHTML = "";
+        }
+
+        var map = L.map("map").setView(
+          [coordinates[0].y, coordinates[0].x],
+          15
+        );
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         }).addTo(map);
 
-        coordinates.forEach(coordinate => {
-        L.marker([coordinate.y, coordinate.x]).addTo(map)
+        coordinates.forEach((coordinate) => {
+          L.marker([coordinate.y, coordinate.x]).addTo(map);
+        });
 
-        })
+        L.geoJSON(geoJsonFeature, {
+          style: {
+            color: "#088",
+            opacity: 0.8,
+            fillColor: "#088",
+            fillOpacity: 0.4,
+          },
+        }).addTo(map);
       </script>
-
     </div>
-    <hr>
+    <hr />
     {% if request.user == project.host %}
     <a href="{% url 'delete-project' project.id %}"> Delete This Project? </a>
     <a href="{% url 'update-project' project.id %}"> Update This Project? </a>
     {%endif%}
-
   </div>
   <div>
     <h3>Conversation</h3>
     <div class="message-container">
       {% for message in project_messages %}
-        <div class="message-item">
-          <small>
-            <a href="{% url 'user-profile' message.user.id %}">@{{ message.user }}</a> 
-            {{ message.created|timesince }} ago
-          </small>
-          {% if request.user == message.user %}
-            <a href="{% url 'delete-message' message.id %}">Delete</a>
-          {% endif %}
-          <p>{{ message.body }}</p>
-        </div>
+      <div class="message-item">
+        <small>
+          <a href="{% url 'user-profile' message.user.id %}"
+            >@{{ message.user }}</a
+          >
+          {{ message.created|timesince }} ago
+        </small>
+        {% if request.user == message.user %}
+        <a href="{% url 'delete-message' message.id %}">Delete</a>
+        {% endif %}
+        <p>{{ message.body }}</p>
+      </div>
       {% endfor %}
     </div>
 

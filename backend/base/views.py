@@ -3,18 +3,21 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point, GEOSGeometry
 from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.core.mail import EmailMessage
+from django.core.serializers import serialize
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator as token_generator
 from .models import Project, Zone, Message, Post, Comment
 from .forms import ProjectForm, PostForm, CustomUserCreationForm
+from urllib.parse import unquote
+import json 
 
 def loginPage(request):
     page = 'login'
@@ -122,11 +125,18 @@ def project(request, pk):
     project_location = project.location
     project_zone = project.zone
 
-    coordinates  = [
-        {'x': project_location.x, 'y' : project_location.y}
+    coordinates = [
+        {'x': project_location.x, 'y': project_location.y}
     ]
 
-    if request.method =='POST':
+    shape = None
+    if project.shape:
+        geom = GEOSGeometry(str(project.shape))
+        shape = geom.geojson
+
+
+
+    if request.method == 'POST':
         message = Message.objects.create(
             user=request.user,
             project=project,
@@ -135,7 +145,15 @@ def project(request, pk):
         project.participants.add(request.user)
         return redirect('project', pk=project.id)
     
-    context = {'project':project, 'project_zone' : project_zone, 'project_messages':project_messages, 'participants':participants, 'project_location': project_location, 'coordinates': coordinates}
+    context = {
+        'project': project,
+        'project_zone': project_zone,
+        'project_messages': project_messages,
+        'participants': participants,
+        'project_location': project_location,
+        'coordinates': coordinates,
+        'shape': shape  
+    }
     return render(request, 'base/projects.html', context)
 
 
@@ -158,6 +176,12 @@ def createProject(request):
     
     location = request.GET.get('location')
     location_data = {'location': location} if location else {}
+    geometry = request.GET.get('geometry')
+
+    if geometry:
+        geometry =  unquote(geometry)
+        geometry_data = json.loads(geometry)
+        geometry = GEOSGeometry(json.dumps(geometry_data), srid=4326)
     
     form = ProjectForm(initial=location_data)
     
@@ -170,6 +194,9 @@ def createProject(request):
             if location:
                 lat, lng = map(float, location.split(','))
                 project.location = Point(lng,lat)
+
+            if geometry:
+                project.shape = geometry
 
             project.save()
             return redirect('home')
