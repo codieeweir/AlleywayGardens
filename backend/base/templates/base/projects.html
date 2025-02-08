@@ -61,8 +61,6 @@
 <div class="project-container">
   <div>
     <p>{{project.description}}</p>
-    <p>{{coordinates}}</p>
-    <p>{{ shape }}</p>
     {{ shape|json_script:"shape_json" }}
     <div id="map" class="map-container">
       {{ coordinates|json_script:"coordinates_json" }} {{
@@ -82,41 +80,47 @@
           document.getElementById("coordinates_json").textContent
         );
 
-        let geoJsonFeature = {
-          type: "Feature",
-          geometry: shape,
-          properties: {},
-        };
-
-        console.log("GeoJSON Feature:", geoJsonFeature);
-
         var mapContainer = document.getElementById("map");
         if (mapContainer._leaflet_id != null) {
           mapContainer.innerHTML = "";
         }
 
-        var map = L.map("map").setView(
-          [coordinates[0].y, coordinates[0].x],
-          15
-        );
+        var map = L.map("map");
 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution:
             '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         }).addTo(map);
 
-        coordinates.forEach((coordinate) => {
-          L.marker([coordinate.y, coordinate.x]).addTo(map);
-        });
+        if (shape && shape.type === "Polygon") {
+          let firstCoord = shape.coordinates[0][0];
+          let centreLatLng = [firstCoord[1], firstCoord[0]];
 
-        L.geoJSON(geoJsonFeature, {
-          style: {
-            color: "#088",
-            opacity: 0.8,
-            fillColor: "#088",
-            fillOpacity: 0.4,
-          },
-        }).addTo(map);
+          console.log(centreLatLng);
+
+          let geoJsonFeature = {
+            type: "Feature",
+            geometry: shape,
+            properties: {},
+          };
+
+          L.geoJSON(geoJsonFeature, {
+            style: {
+              color: "#088",
+              opacity: 0.8,
+              fillColor: "#088",
+              fillOpacity: 0.4,
+            },
+          }).addTo(map);
+
+          map.setView(centreLatLng, 17);
+        } else {
+          coordinates.forEach((coordinate) => {
+            L.marker([coordinate.y, coordinate.x]).addTo(map);
+          });
+
+          map.setView([coordinates[0].y, coordinates[0].x], 16);
+        }
       </script>
     </div>
     <hr />

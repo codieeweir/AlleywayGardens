@@ -111,9 +111,11 @@ def home(request):
     coordinates  = [
         {'id': loc.id, 'name': loc.name , 'description': loc.description, 'x': loc.location.x, 'y' : loc.location.y} for loc in projects if loc.location
     ]
+
+    shapes = [GEOSGeometry(str(loc.shape)).geojson for loc in projects if loc.shape]
    
     # Render template with locations embedded
-    context = {'projects': projects, 'zones': zones, 'coordinates': coordinates}
+    context = {'projects': projects, 'zones': zones, 'coordinates': coordinates, 'shapes' : shapes}
     return render(request, 'base/home.html', context)
 
 

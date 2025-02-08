@@ -75,8 +75,8 @@ a{% extends 'main.html' %} {% load static %} {% block content %}
     <p>Mark a location on the map to create a project</p>
     <div id="map" class="map-container"></div>
   </div>
-
-  {{ coordinates|json_script:"coordinates_json" }}
+  {{ shapes|json_script:"shape_json" }}
+  {{coordinates|json_script:"coordinates_json" }}
   <script>
     const currentZone = "{{ request.GET.q }}";
   </script>
@@ -85,6 +85,11 @@ a{% extends 'main.html' %} {% load static %} {% block content %}
       document.getElementById("coordinates_json").textContent
     );
 
+    let shapes = JSON.parse(document.getElementById("shape_json").textContent);
+
+    if (typeof shape === "string") {
+      shape = JSON.parse(shape);
+    }
     //Creating the functionality for the map filtering
     const zoneCoordinates = {
       "North Belfast": {
@@ -106,7 +111,7 @@ a{% extends 'main.html' %} {% load static %} {% block content %}
     };
 
     // Map creation with the filtering applied
-    var map = L.map("map").setView([54.597, -5.93], 12);
+    var map = L.map("map").setView([54.597, -5.93], 13);
 
     if (currentZone && zoneCoordinates[currentZone]) {
       const zoneData = zoneCoordinates[currentZone];
@@ -157,6 +162,34 @@ a{% extends 'main.html' %} {% load static %} {% block content %}
     };
     toggleControl.addTo(map);
 
+    // Polygons Layer to map
+    var shapeLayer = L.layerGroup().addTo(map);
+
+    var shapeToggleControl = L.control({ position: "topright" });
+
+    shapeToggleControl.onAdd = function (map) {
+      var div = L.DomUtil.create(
+        "div",
+        "leaflet-bar leaflet-control leaflet-control-custom"
+      );
+      div.innerHTML =
+        '<input type="checkbox" id="toggleShape" checked > Show Shapes';
+      div.style.backgroundColor = "White";
+      div.style.padding = "5px";
+      div.style.cursor = "pointer";
+
+      L.DomEvent.on(div, "change", function (e) {
+        if (e.target.checked) {
+          map.addLayer(shapeLayer);
+        } else {
+          map.removeLayer(shapeLayer);
+        }
+      });
+      return div;
+    };
+
+    shapeToggleControl.addTo(map);
+
     // Adding the Markers to the main map
     coordinates.forEach((coordinate) => {
       const { y, x, name, description, id } = coordinate;
@@ -170,6 +203,18 @@ a{% extends 'main.html' %} {% load static %} {% block content %}
                 <a href = "/project/${id}"> Check out this project </a>
                 `
       );
+    });
+
+    shapes.forEach((shapeString) => {
+      let shape = JSON.parse(shapeString);
+      L.geoJSON(shape, {
+        style: {
+          color: "#088",
+          opacity: 0.8,
+          fillColor: "#088",
+          fillOpacity: 0.4,
+        },
+      }).addTo(shapeLayer);
     });
 
     // drawn items working area
@@ -226,6 +271,8 @@ a{% extends 'main.html' %} {% load static %} {% block content %}
     function handleGeometry(layer) {
       var geometry = layer.toGeoJSON().geometry;
       var geomtryJson = JSON.stringify(geometry);
+
+      shapeLayer.addLayer(layer);
 
       var formHtml = `
             <h3> Define this area as a projects location? </h3>
