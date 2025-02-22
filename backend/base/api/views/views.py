@@ -1,56 +1,76 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import generics, viewsets
 from base.models import Project, User, Zone, Post, Message, Comment
 from ..serializers import ProjectSerializer, UserSerializer, ZoneSerializer, PostSerializer, MessageSerializer, CommentSerializer
+from django.contrib.gis.geos import GEOSGeometry
+## GET VIEWS With Django ViewSets
 
-## GET VIEWS 
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
-@api_view(['GET'])
-def getProjects(request):
-    projects = Project.objects.all()
-    serializer = ProjectSerializer(projects, many=True)
-    return Response(serializer.data)
+class ZoneViewSet(viewsets.ModelViewSet):
+    queryset = Zone.objects.all()
+    serializer_class = ZoneSerializer
 
-@api_view(['GET'])
-def getProject(request, pk):
-    project = Project.objects.get(id=pk)
-    serializer = ProjectSerializer(project, many=False)
-    return Response(serializer.data)
+class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
 
-@api_view(['GET'])
-def getUsers(request):
-    users = User.objects.all()
-    serializer = UserSerializer(users, many=True)
-    return Response(serializer.data)
+class MessageViewSet(viewsets.ModelViewSet):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
 
-@api_view(['GET'])
-def getUser(request, pk):
-    user = User.objects.get(id=pk)
-    serializer = UserSerializer(user, many=False)
-    return Response(serializer.data)
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
 
-@api_view(['GET'])
-def getZones(request):
-    zones = Zone.objects.all()
-    serializer = ZoneSerializer(zones, many=True)
-    return Response(serializer.data)
+## Custom Views for React
 
 
-@api_view(['GET'])
-def getPosts(request):
-    posts = Post.objects.all()
-    serializer = PostSerializer(posts, many=True)
-    return Response(serializer.data)
+class ProjectDetailView(generics.RetrieveAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
 
-@api_view(['GET'])
-def getMessages(request):
-    messages = Message.objects.all()
-    serializer = MessageSerializer(messages, many=True)
-    return Response(serializer.data)
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        data = serializer.data
 
-@api_view(['GET'])
-def getComments(request):
-    comments = Comment.objects.all()
-    serializer = CommentSerializer(comments, many=True)
-    return Response(serializer.data)
+        if data.get("shape"):
+            data["shape"] = GEOSGeometry(data["shape"]).geojson
 
+        return Response(data)
+
+
+class ProjectCreateView(generics.CreateAPIView):
+    serializer_class = ProjectSerializer
+
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+
+        shape_data = data.get("shape")
+        if shape_data:
+            data["shape"] = GEOSGeometry(str(shape_data))
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        return Response(serializer.data)
+    
+class ProjectListView(generics.ListAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        serialized_data = serializer.data
+
+        for project in serialized_data:
+            if project["shape"]:
+                project["shape"] = GEOSGeometry(project["shape"]).geojson
+            
+        return Response(serialized_data)

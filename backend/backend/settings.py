@@ -141,3 +141,7 @@ GDAL_LIBRARY_PATH = r'C:\Users\court\OneDrive\Desktop\Alleyway Gardens Project\A
 GEOS_LIBRARY_PATH = r'C:\Users\court\OneDrive\Desktop\Alleyway Gardens Project\AlleywayGardens\env\Lib\site-packages\osgeo\geos_c.dll'
 
 CORS_ALLOW_ALL_ORGINS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000"
+]
