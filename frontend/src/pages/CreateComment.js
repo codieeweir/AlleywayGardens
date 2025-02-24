@@ -23,7 +23,7 @@ const CreateComment = () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer your-token-here",
+        //Authorization: "Bearer your-token-here",
       },
       body: JSON.stringify(formData),
     });

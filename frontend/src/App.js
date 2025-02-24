@@ -10,21 +10,31 @@ import Profile from "./pages/profile";
 import ForumPost from "./pages/ForumPost";
 import CreatePost from "./pages/CreatePost";
 import CreateComment from "./pages/CreateComment";
+import AuthPage from "./pages/LoginRegister";
+import PrivateRoute from "./utils/PrivateRoute";
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
+  const isAuthenticated = true;
+
   return (
     <Router>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/projects/:id" element={<Projects />} />
-        <Route path="/create-project" element={<CreateProject />} />
-        <Route path="/forum" element={<Forum />} />
-        <Route path="/profile/:id" element={<Profile />} />
-        <Route path="/forum-post/:id" element={<ForumPost />} />
-        <Route path="/create-post" element={<CreatePost />} />
-        <Route path="/create-comment" element={<CreateComment />} />
-      </Routes>
+      <AuthProvider>
+        <Navbar />
+        <Routes>
+          <Route element={<PrivateRoute isAuthenticated={isAuthenticated} />}>
+            <Route path="/" element={<Home />} />
+          </Route>
+          <Route path="/projects/:id" element={<Projects />} />
+          <Route path="/create-project" element={<CreateProject />} />
+          <Route path="/forum" element={<Forum />} />
+          <Route path="/profile/:id" element={<Profile />} />
+          <Route path="/forum-post/:id" element={<ForumPost />} />
+          <Route path="/create-post" element={<CreatePost />} />
+          <Route path="/create-comment" element={<CreateComment />} />
+          <Route path="/login" element={<AuthPage />} />
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 }
