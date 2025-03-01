@@ -155,3 +155,47 @@ def activate_user(request, uidb64, token):
         return Response({'message': 'Your account has been activated!'}, status=status.HTTP_200_OK)
     else:
         return Response({'message': 'Invalid activation link'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def password_reset_request(request):
+    email = request.data.get("email")
+    if not email:
+        return Response({ "message" : "Email required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response ({ "message" : "If this email exists, a link while arrive shortly"}, status=status.HTTP_200_OK)
+    
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = token_generator.make_token(user)
+
+    current_site = get_current_site(request).domain
+    reset_url = f"http://localhost:3000/password-reset-confirm/{uid}/{token}"
+    mail_subject = "Password Reset Request"
+    message = f"Click the link below to reset your password:\n{reset_url}"
+
+    email_message = EmailMessage(mail_subject, message, to=[user.email])
+    email_message.send()
+
+    return Response ({ "message" : "If this email exists, a link while arrive shortly"}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def password_reset_confirm(request, uidb64, token):
+    try:
+        uid = force_bytes(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (User.DoesNotExist, TypeError, ValueError, OverflowError):
+        return Response ({ "error" : "Invalid Rest Link"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if not token_generator.check_token(user, token):
+        return Response ({ "error" : "Invalid or Expired token"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    new_password = request.data.get("password")
+    if not new_password:
+        return Response ({ "error" : "Password is required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    user.set_password(new_password)
+    user.save()
+
+    return Response ({ "message" : "Password has been changed"}, status=status.HTTP_200_OK)

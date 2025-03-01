@@ -13,6 +13,12 @@ const AuthPage = () => {
         <input type="submit" />
       </form>
       <p>
+        Forgotten you Password?
+        <button onClick={() => navigate("/password-reset")}>
+          Send Password Rest Link
+        </button>
+      </p>
+      <p>
         Dont have an account?
         <button onClick={() => navigate("/register")}>Sign Up Now </button>
       </p>

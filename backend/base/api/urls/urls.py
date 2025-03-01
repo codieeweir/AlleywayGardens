@@ -1,7 +1,7 @@
 from django.urls import path, include
 from ..views import views
 from rest_framework.routers import DefaultRouter
-from ..views.views import  register_user, activate_user, ZoneViewSet, UserViewSet, PostViewSet, MessageViewSet, CommentViewSet, ProjectListView,  ProjectCreateView, ProjectDetailView, MyTokenObtainPairView
+from ..views.views import  register_user, activate_user, password_reset_request, password_reset_confirm, ZoneViewSet, UserViewSet, PostViewSet, MessageViewSet, CommentViewSet, ProjectListView,  ProjectCreateView, ProjectDetailView, MyTokenObtainPairView
 from ..urls.routes import getRoutes
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
@@ -36,6 +36,10 @@ urlpatterns = [
 
     path('register/', register_user, name="register"),
     path("activate/<str:uidb64>/<str:token>/", activate_user, name="activate"),
+
+    path("password-reset/", password_reset_request, name="password_reset"),
+    path("password-reset-confirm/<uidb64>/<token>/", password_reset_confirm, name="password_reset_confirm"),
+
     path('projects/', ProjectListView.as_view(), name='project-list' ),
     path('projects/create/', ProjectCreateView.as_view(), name='project-create'),
     path('projects/<int:pk>/', ProjectDetailView.as_view(), name='project-detail'),

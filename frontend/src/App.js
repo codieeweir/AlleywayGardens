@@ -14,6 +14,8 @@ import AuthPage from "./pages/LoginPage";
 import PrivateRoute from "./utils/PrivateRoute";
 import { AuthProvider } from "./context/AuthContext";
 import RegisterPage from "./pages/RegisterUser";
+import PasswordReset from "./pages/PasswordReset";
+import PasswordResetConfirm from "./pages/PasswordResetConfirm";
 
 function App() {
   const isAuthenticated = true;
@@ -35,6 +37,11 @@ function App() {
           <Route path="/create-comment" element={<CreateComment />} />
           <Route path="/login" element={<AuthPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/password-reset" element={<PasswordReset />} />
+          <Route
+            path="/password-reset-confirm/:uid/:token"
+            element={<PasswordResetConfirm />}
+          />
         </Routes>
       </AuthProvider>
     </Router>
