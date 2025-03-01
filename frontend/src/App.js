@@ -10,9 +10,10 @@ import Profile from "./pages/profile";
 import ForumPost from "./pages/ForumPost";
 import CreatePost from "./pages/CreatePost";
 import CreateComment from "./pages/CreateComment";
-import AuthPage from "./pages/LoginRegister";
+import AuthPage from "./pages/LoginPage";
 import PrivateRoute from "./utils/PrivateRoute";
 import { AuthProvider } from "./context/AuthContext";
+import RegisterPage from "./pages/RegisterUser";
 
 function App() {
   const isAuthenticated = true;
@@ -33,6 +34,7 @@ function App() {
           <Route path="/create-post" element={<CreatePost />} />
           <Route path="/create-comment" element={<CreateComment />} />
           <Route path="/login" element={<AuthPage />} />
+          <Route path="/register" element={<RegisterPage />} />
         </Routes>
       </AuthProvider>
     </Router>

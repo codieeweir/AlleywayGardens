@@ -1,15 +1,17 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import generics, viewsets
+from rest_framework import generics, viewsets, status
+from django.utils.encoding import force_bytes, force_str
 from base.models import Project, User, Zone, Post, Message, Comment
 from ..serializers import ProjectSerializer, UserSerializer, ZoneSerializer, PostSerializer, MessageSerializer, CommentSerializer
 from django.contrib.gis.geos import GEOSGeometry
-
+from django.contrib.auth.tokens import default_token_generator as token_generator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
-
-
-
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.core.mail import EmailMessage
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -26,6 +28,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
+
+
 
 
 ## GET VIEWS With Django ViewSets
@@ -98,3 +102,56 @@ class ProjectListView(generics.ListAPIView):
                 project["shape"] = GEOSGeometry(project["shape"]).geojson
             
         return Response(serialized_data)
+    
+# class RegisterView(generics.CreateAPIView):
+#     serializer_class = UserSerializer
+    
+#     def create(self, request, *args, **kwargs):
+#         data = request.data.copy()
+#         serializer = self.get_serializer(data=data)
+#         serializer.is_valid(raise_exception=True)
+#         self.perform_create    
+#         return Response(serialized_data)
+
+@api_view(['POST'])
+def register_user(request):
+    serializer = UserSerializer(data=request.data)
+
+
+    if serializer.is_valid():
+        user = serializer.save()
+
+        
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = token_generator.make_token(user)
+
+        current_site = get_current_site(request)
+        mail_subject = 'Activate your Account'
+        message = render_to_string('base/email_verification.html', {
+                'user' : user,
+                'domain': current_site.domain,
+                'uid' : uid,
+                'token': token
+        })
+        email = EmailMessage(mail_subject, message, to=[user.email])
+        email.send()
+
+        return Response({'message': 'An email has been sent for verification.'}, status=status.HTTP_201_CREATED)
+    else:
+        return Response({'error': 'Invalid data provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])  
+def activate_user(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        return Response({'message': 'Your account has been activated!'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'message': 'Invalid activation link'}, status=status.HTTP_400_BAD_REQUEST)

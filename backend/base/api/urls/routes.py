@@ -12,6 +12,7 @@ def getRoutes(request):
         'api/token/refresh',
         'api/users/',
         'api/users/{id}/',
+        'api/register'
         'api/zones/',
         'api/zones/{id}/',
         'api/posts/',

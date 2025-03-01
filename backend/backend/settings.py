@@ -51,7 +51,7 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=90),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
-    "UPDATE_LAST_LOGIN": False,
+    "UPDATE_LAST_LOGIN": True,
 
     "ALGORITHM": "HS256",
     "VERIFYING_KEY": "",
@@ -69,7 +69,7 @@ SIMPLE_JWT = {
 
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
     "TOKEN_TYPE_CLAIM": "token_type",
-    "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
+    "TOKEN_USER_CLASS": None,
 
     "JTI_CLAIM": "jti",
 

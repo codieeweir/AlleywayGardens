@@ -1,9 +1,10 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import React, { useContext } from "react";
 import AuthContext from "../context/AuthContext";
 
 const Navbar = () => {
   let { user, logoutUser } = useContext(AuthContext);
+
   return (
     <nav>
       <h1>My Forum</h1>

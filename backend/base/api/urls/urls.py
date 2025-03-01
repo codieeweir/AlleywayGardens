@@ -1,7 +1,7 @@
 from django.urls import path, include
 from ..views import views
 from rest_framework.routers import DefaultRouter
-from ..views.views import  ZoneViewSet, UserViewSet, PostViewSet, MessageViewSet, CommentViewSet, ProjectListView,  ProjectCreateView, ProjectDetailView, MyTokenObtainPairView
+from ..views.views import  register_user, activate_user, ZoneViewSet, UserViewSet, PostViewSet, MessageViewSet, CommentViewSet, ProjectListView,  ProjectCreateView, ProjectDetailView, MyTokenObtainPairView
 from ..urls.routes import getRoutes
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
@@ -34,6 +34,8 @@ urlpatterns = [
     path('comments/<int:pk>/', CommentViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='comment-detail'),
 
 
+    path('register/', register_user, name="register"),
+    path("activate/<str:uidb64>/<str:token>/", activate_user, name="activate"),
     path('projects/', ProjectListView.as_view(), name='project-list' ),
     path('projects/create/', ProjectCreateView.as_view(), name='project-create'),
     path('projects/<int:pk>/', ProjectDetailView.as_view(), name='project-detail'),
