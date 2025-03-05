@@ -1,8 +1,9 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
-from base.models import Project, User, Zone, Post, Message, Comment
+from base.models import Project, User, Zone, Post, Message, Comment, Image
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.auth.hashers import make_password
+from django.contrib.contenttypes.models import ContentType
 
 class UserSerializer(ModelSerializer):
     class Meta:
@@ -54,3 +55,20 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = ['id', 'user', 'title', 'project', 'zone', 'body', 'updated', 'created', 'comments' ]
 
+
+class ImageUploadSerializer(serializers.ModelSerializer):
+    content_type = serializers.SlugRelatedField(
+        queryset=ContentType.objects.all(),
+        slug_field='model'
+    )
+
+    class Meta:
+        model = Image
+        fields = ['image', 'content_type', 'object_id']
+        read_only_fields = ['id', 'user', 'uploaded_at']
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and request.user:
+            validated_data['user'] = request.user
+        return super().create(validated_data)

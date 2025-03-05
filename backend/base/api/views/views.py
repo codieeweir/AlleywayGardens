@@ -1,9 +1,19 @@
+import json
+from numpy import convolve
+import openmeteo_requests
+import requests_cache
+import pandas as pd
+import logging
+from retry_requests import retry
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import generics, viewsets, status
+from django.core.cache import cache
+from datetime import datetime
+from django.http import JsonResponse
+from rest_framework import generics, viewsets, status, permissions
 from django.utils.encoding import force_bytes, force_str
-from base.models import Project, User, Zone, Post, Message, Comment
-from ..serializers import ProjectSerializer, UserSerializer, ZoneSerializer, PostSerializer, MessageSerializer, CommentSerializer
+from base.models import Project, User, Zone, Post, Message, Comment, Image
+from ..serializers import ProjectSerializer, UserSerializer, ZoneSerializer, PostSerializer, MessageSerializer, CommentSerializer, ImageUploadSerializer
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.auth.tokens import default_token_generator as token_generator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -28,8 +38,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
-
-
 
 
 ## GET VIEWS With Django ViewSets
@@ -199,3 +207,83 @@ def password_reset_confirm(request, uidb64, token):
     user.save()
 
     return Response ({ "message" : "Password has been changed"}, status=status.HTTP_200_OK)
+
+
+## Image APIS
+
+class ImageUploadView(generics.CreateAPIView):
+    serializer_class = ImageUploadSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+@api_view(["GET"])
+def get_project_images(request, project_id):
+    images = Image.objects.filter(object_id=project_id, content_type__model='project')
+    serializer = ImageUploadSerializer(images, many=True)
+    return Response(serializer.data)
+
+@api_view(["GET"])
+def get_post_images(request, post_id):
+    images = Image.objects.filter(object_id=post_id, content_type__model='post')
+    serializer = ImageUploadSerializer(images, many=True)
+    return Response(serializer.data)
+
+
+# Setup API client with caching and retry logic
+cache_session = requests_cache.CachedSession('.cache', expire_after=3600)
+retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
+openmeteo = openmeteo_requests.Client(session=retry_session)
+
+def get_project_weather(request, project_id):
+    try:
+        # Retrieve project and extract first coordinate from shape field
+        project = Project.objects.get(id=project_id)
+        shape_geojson = json.loads(GEOSGeometry(project.shape).geojson)
+        coordinates = shape_geojson["coordinates"][0][0]  # Extract first coordinate (Polygon assumption)
+        latitude, longitude = coordinates[1], coordinates[0]  # GeoJSON format: [longitude, latitude]
+
+        # Open-Meteo API request parameters
+        url = "https://api.open-meteo.com/v1/forecast"
+        params = {
+            "latitude": latitude,
+            "longitude": longitude,
+            "daily": [
+                "temperature_2m_max", "daylight_duration", "sunshine_duration", 
+                "uv_index_max", "precipitation_sum", "rain_sum", "precipitation_hours"
+            ],
+            "timezone": "auto",
+            "forecast_days": 1
+        }
+
+        # Fetch weather data
+        responses = openmeteo.weather_api(url, params=params)
+        response = responses[0]
+
+        # Extract daily weather data
+        daily = response.Daily()
+        daily_data = {
+            "date": pd.date_range(
+                start=pd.to_datetime(daily.Time(), unit="s", utc=True),
+                end=pd.to_datetime(daily.TimeEnd(), unit="s", utc=True),
+                freq=pd.Timedelta(seconds=daily.Interval()),
+                inclusive="left"
+            ),
+            "temperature_2m_max": daily.Variables(0).ValuesAsNumpy(),
+            "daylight_duration": daily.Variables(1).ValuesAsNumpy(),
+            "sunshine_duration": daily.Variables(2).ValuesAsNumpy(),
+            "uv_index_max": daily.Variables(3).ValuesAsNumpy(),
+            "precipitation_sum": daily.Variables(4).ValuesAsNumpy(),
+            "rain_sum": daily.Variables(5).ValuesAsNumpy(),
+            "precipitation_hours": daily.Variables(6).ValuesAsNumpy()
+        }
+
+        # Convert DataFrame to JSON response
+        daily_dataframe = pd.DataFrame(daily_data)
+        return JsonResponse(daily_dataframe.to_dict(orient="records"), safe=False)
+
+    except Project.DoesNotExist:
+        return JsonResponse({"error": "Project not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

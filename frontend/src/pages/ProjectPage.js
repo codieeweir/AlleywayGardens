@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ProjectMap from "../components/ProjectMap";
+import ImageUpload from "../components/ImageUpload";
+import ProjectImages from "../components/ProjectImages";
+import WeatherMetrics from "../components/WeatherMetrics";
 
 const Projects = () => {
   const [project, setProjects] = useState(null);
@@ -50,6 +53,10 @@ const Projects = () => {
       <h1> {project.name} </h1>
       <p>{project.description}</p>
       <ProjectMap project={project} />
+
+      <h3> Upload Project Image?</h3>
+      <ImageUpload contentType="project" objectId={id} />
+      <ProjectImages projectId={project.id} />
       <ul>
         <h3>Project Chat Box </h3>
         {project.messages && project.messages.length > 0 ? (
@@ -67,6 +74,7 @@ const Projects = () => {
         />
         <button type="submit"> Send Message </button>
       </form>
+      <WeatherMetrics project_id={project.id} />
     </div>
   );
 };

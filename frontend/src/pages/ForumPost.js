@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
+import PostImages from "../components/PostImages";
+import ImageUpload from "../components/ImageUpload";
 
 const ForumPost = () => {
   const [post, setPost] = useState([]);
@@ -27,6 +29,8 @@ const ForumPost = () => {
         <Link to={`/create-comment?id=${post.id}`}>
           <button>Comment on this post?</button>
         </Link>
+        <PostImages postId={post.id} />
+        <ImageUpload contentType="post" objectId={id} />
       </ul>
     </div>
   );

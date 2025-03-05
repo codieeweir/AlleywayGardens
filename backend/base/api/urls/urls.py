@@ -1,7 +1,7 @@
 from django.urls import path, include
 from ..views import views
 from rest_framework.routers import DefaultRouter
-from ..views.views import  register_user, activate_user, password_reset_request, password_reset_confirm, ZoneViewSet, UserViewSet, PostViewSet, MessageViewSet, CommentViewSet, ProjectListView,  ProjectCreateView, ProjectDetailView, MyTokenObtainPairView
+from ..views.views import  register_user, ImageUploadView, get_project_images, get_post_images, get_project_weather, activate_user, password_reset_request, password_reset_confirm, ZoneViewSet, UserViewSet, PostViewSet, MessageViewSet, CommentViewSet, ProjectListView,  ProjectCreateView, ProjectDetailView, MyTokenObtainPairView
 from ..urls.routes import getRoutes
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
@@ -39,6 +39,11 @@ urlpatterns = [
 
     path("password-reset/", password_reset_request, name="password_reset"),
     path("password-reset-confirm/<uidb64>/<token>/", password_reset_confirm, name="password_reset_confirm"),
+
+    path('upload-image/', ImageUploadView.as_view(), name='upload-image' ),
+    path("project-images/<int:project_id>/", get_project_images, name="project-images"),
+    path("post-images/<int:post_id>/", get_post_images, name="post-images"),
+    path("project_weather/<int:project_id>/", get_project_weather, name="project-weather"),
 
     path('projects/', ProjectListView.as_view(), name='project-list' ),
     path('projects/create/', ProjectCreateView.as_view(), name='project-create'),
