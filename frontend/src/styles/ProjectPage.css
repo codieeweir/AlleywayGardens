@@ -1,0 +1,98 @@
+/* Project Page Styling */
+.project-page {
+  padding: 20px;
+}
+
+.project-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.project-description {
+  font-size: 1.2rem;
+  color: #7f8c8d;
+  margin-bottom: 20px;
+}
+
+.project-map {
+  margin-bottom: 40px;
+}
+
+.image-upload-section,
+.chat-box-section,
+.weather-metrics-section {
+  margin-bottom: 40px;
+}
+
+/* Chat Box Section Styling */
+.chat-box-section {
+  background-color: #f4f6f9;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chat-box {
+  max-height: 300px;
+  overflow-y: scroll;
+  margin-bottom: 20px;
+}
+
+.chat-message {
+  background-color: #ffffff;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chat-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-form textarea {
+  padding: 10px;
+  margin-bottom: 10px;
+  font-size: 1rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  resize: none;
+  min-height: 80px;
+}
+
+.send-message-button {
+  padding: 10px;
+  background-color: #1d3929;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.send-message-button:hover {
+  background-color: #051b0e;
+}
+
+/* Project Image Section */
+.image-upload-section h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.image-upload-section {
+  padding: 20px;
+  background-color: #eef7e4;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.weather-metrics-section {
+  background-color: #f9fafb;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}

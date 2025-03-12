@@ -1,0 +1,77 @@
+/* Custom styles for Forum page */
+
+/* Green button for Create Post */
+.btn-custom {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.btn-custom:hover {
+  background-color: #218838;
+  color: white;
+}
+
+/* Styling for the Update Post button */
+.btn-update {
+  background-color: #17a2b8;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-update:hover {
+  background-color: #138496;
+  color: white;
+}
+
+/* Post items in list-group */
+.list-group-item {
+  border: 1px solid #e3e3e3;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.list-group-item:hover {
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+/* Spacing between each post */
+.list-group {
+  margin-top: 20px;
+}
+
+/* Custom styling for the forum title */
+h2 {
+  font-weight: 600;
+  font-size: 32px;
+  color: #333;
+}
+
+/* Styling the zone badge */
+.badge.bg-secondary {
+  background-color: #6c757d;
+}
+
+/* Make sure the text for each post title and body is well-spaced */
+p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555;
+}
+
+h6 {
+  font-size: 12px;
+  color: #888;
+}
+
+/* Ensure proper spacing for the forum elements */
+hr {
+  margin-top: 20px;
+}

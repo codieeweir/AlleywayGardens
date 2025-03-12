@@ -1,0 +1,7 @@
+/* Add this CSS to your custom stylesheet */
+.bold-header {
+  font-weight: bold;
+  font-size: 2rem; /* You can adjust this size as needed */
+  letter-spacing: 2px; /* Optional: Adds spacing between letters for a more impactful look */
+  color: #2c3e50; /* Optional: Change the color to a darker shade */
+}

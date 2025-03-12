@@ -1,0 +1,82 @@
+.main-page-bg {
+  background-color: #f1f3ee; /* Sage green color */
+  color: #fff; /* White text for contrast */
+  padding: 20px;
+  border-radius: 8px;
+}
+
+/* Hero Section */
+.map-header-section {
+  /* A different green shade for the hero */
+  background-color: #4e7a19;
+  text-align: center;
+  padding: 50px 0;
+  border-radius: 10px;
+}
+
+.floating-box {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  max-width: 250px;
+  z-index: 1000;
+}
+
+/* Zones Section */
+.zones {
+  background-color: #a9d5bf; /* Light background to contrast */
+  padding: 30px 0;
+}
+
+.zones .list-group-item {
+  cursor: pointer;
+  padding: 15px;
+}
+
+.zones .list-group-item:hover {
+  background-color: #c6debe; /* Lighter green on hover */
+}
+
+.zones .font-weight-bold {
+  font-weight: bold;
+}
+
+/* Map Section */
+.map-section {
+  background-color: #d8d8d8;
+  padding: 50px 0;
+}
+
+.map-section h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #6b8e23;
+}
+
+/* Project List Section */
+.projects {
+  padding: 50px 0;
+}
+
+.projects .card {
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.projects .card-title {
+  color: #4e4e4e;
+}
+
+.projects .card-body {
+  background-color: #fff;
+}
+
+.projects .btn-primary {
+  background-color: #6b8e23;
+  border-color: #6b8e23;
+}
+
+.projects .btn-primary:hover {
+  background-color: #4e7a19;
+  border-color: #4e7a19;
+}

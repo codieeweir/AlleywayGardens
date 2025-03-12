@@ -16,6 +16,9 @@ import { AuthProvider } from "./context/AuthContext";
 import RegisterPage from "./pages/RegisterUser";
 import PasswordReset from "./pages/PasswordReset";
 import PasswordResetConfirm from "./pages/PasswordResetConfirm";
+import ProjectsPage from "./pages/Projects";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min";
 
 function App() {
   const isAuthenticated = true;
@@ -29,9 +32,10 @@ function App() {
             <Route path="/" element={<Home />} />
           </Route>
           <Route path="/projects/:id" element={<Projects />} />
+          <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/create-project" element={<CreateProject />} />
           <Route path="/forum" element={<Forum />} />
-          <Route path="/profile/:id" element={<Profile />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/forum-post/:id" element={<ForumPost />} />
           <Route path="/create-post" element={<CreatePost />} />
           <Route path="/create-comment" element={<CreateComment />} />
