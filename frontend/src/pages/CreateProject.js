@@ -6,12 +6,14 @@ const CreateProject = () => {
   const navigate = useNavigate();
 
   const shape = searchParams.get("geometry");
+  const location = searchParams.get("location");
 
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     shape: shape || "",
     host: 2,
+    location: location,
   });
 
   const handleChange = (e) => {
@@ -58,6 +60,14 @@ const CreateProject = () => {
         <textarea
           name="shape"
           value={formData.shape}
+          onChange={handleChange}
+          readOnly
+        />
+
+        <label>location</label>
+        <textarea
+          name="location"
+          value={formData.location}
           onChange={handleChange}
           readOnly
         />
