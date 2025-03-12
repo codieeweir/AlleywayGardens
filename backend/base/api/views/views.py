@@ -32,7 +32,9 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         # Add custom claims
         token['username'] = user.username
-        # ...
+        token['firstname'] = user.first_name
+        token['surname'] = user.last_name
+    # ...
 
         return token
     
@@ -64,6 +66,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 ## Custom Views for React
 
+##Project Views 
 
 class ProjectDetailView(generics.RetrieveAPIView):
     queryset = Project.objects.all()
@@ -90,6 +93,13 @@ class ProjectCreateView(generics.CreateAPIView):
         if shape_data:
             data["shape"] = GEOSGeometry(str(shape_data))
 
+        location_data = data.get("location")
+        if location_data:
+            if isinstance(location_data, str):
+                location_data = json.loads(location_data)
+
+                data["location"] = GEOSGeometry(json.dumps(location_data))
+
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -108,18 +118,14 @@ class ProjectListView(generics.ListAPIView):
         for project in serialized_data:
             if project["shape"]:
                 project["shape"] = GEOSGeometry(project["shape"]).geojson
+
+        for project in serialized_data:
+            if project["location"]:
+                project["location"] = GEOSGeometry(project["location"]).geojson
             
         return Response(serialized_data)
     
-# class RegisterView(generics.CreateAPIView):
-#     serializer_class = UserSerializer
-    
-#     def create(self, request, *args, **kwargs):
-#         data = request.data.copy()
-#         serializer = self.get_serializer(data=data)
-#         serializer.is_valid(raise_exception=True)
-#         self.perform_create    
-#         return Response(serialized_data)
+
 
 @api_view(['POST'])
 def register_user(request):
@@ -230,6 +236,12 @@ def get_post_images(request, post_id):
     serializer = ImageUploadSerializer(images, many=True)
     return Response(serializer.data)
 
+@api_view(["GET"])
+def get_user_images(request, user_id):
+    images = Image.objects.filter(object_id=user_id, content_type__model='user')
+    serializer = ImageUploadSerializer(images, many=True)
+    return Response(serializer.data)
+
 
 # Setup API client with caching and retry logic
 cache_session = requests_cache.CachedSession('.cache', expire_after=3600)
@@ -287,3 +299,34 @@ def get_project_weather(request, project_id):
         return JsonResponse({"error": "Project not found"}, status=404)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+
+## Foreign Key Type Endpoints
+
+class UserProjectsView(generics.ListAPIView):
+    serializer_class = ProjectSerializer
+    
+    def get_queryset(self):
+        user_id = self.kwargs["user_id"]
+        return Project.objects.filter(host_id=user_id)
+    
+class UserMessagesView(generics.ListAPIView):
+    serializer_class = MessageSerializer
+    
+    def get_queryset(self):
+        user_id = self.kwargs["user_id"]
+        return Message.objects.filter(user_id=user_id)
+    
+class UserCommentsView(generics.ListAPIView):
+    serializer_class = CommentSerializer
+    
+    def get_queryset(self):
+        user_id = self.kwargs["user_id"]
+        return Comment.objects.filter(user_id=user_id)
+    
+class UserPostsView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    
+    def get_queryset(self):
+        user_id = self.kwargs["user_id"]
+        return Post.objects.filter(user_id=user_id)

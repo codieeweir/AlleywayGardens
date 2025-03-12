@@ -1,7 +1,7 @@
 from django.urls import path, include
 from ..views import views
 from rest_framework.routers import DefaultRouter
-from ..views.views import  register_user, ImageUploadView, get_project_images, get_post_images, get_project_weather, activate_user, password_reset_request, password_reset_confirm, ZoneViewSet, UserViewSet, PostViewSet, MessageViewSet, CommentViewSet, ProjectListView,  ProjectCreateView, ProjectDetailView, MyTokenObtainPairView
+from ..views.views import  register_user, ImageUploadView, get_project_images, get_post_images, get_user_images, get_project_weather, UserCommentsView, UserMessagesView, UserPostsView, UserProjectsView,activate_user, password_reset_request, password_reset_confirm, ZoneViewSet, UserViewSet, PostViewSet, MessageViewSet, CommentViewSet, ProjectListView,  ProjectCreateView, ProjectDetailView, MyTokenObtainPairView
 from ..urls.routes import getRoutes
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
@@ -20,6 +20,10 @@ urlpatterns = [
 
     path('users/', UserViewSet.as_view({'get': 'list', 'post': 'create'}), name='user-list'),
     path('users/<int:pk>/', UserViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='user-detail'),
+     path("users/<int:user_id>/projects/", UserProjectsView.as_view(), name="user-projects"),
+    path("users/<int:user_id>/messages/", UserMessagesView.as_view(), name="user-messages"),
+    path("users/<int:user_id>/posts/", UserPostsView.as_view(), name="user-posts"),
+    path("users/<int:user_id>/comments/", UserCommentsView.as_view(), name="user-comments"),
 
     path('zones/', ZoneViewSet.as_view({'get': 'list', 'post': 'create'}), name='zone-list'),
     path('zones/<int:pk>/', ZoneViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='zone-detail'),
@@ -43,6 +47,7 @@ urlpatterns = [
     path('upload-image/', ImageUploadView.as_view(), name='upload-image' ),
     path("project-images/<int:project_id>/", get_project_images, name="project-images"),
     path("post-images/<int:post_id>/", get_post_images, name="post-images"),
+    path("user-images/<int:user_id>/", get_user_images, name="user-images"),
     path("project_weather/<int:project_id>/", get_project_weather, name="project-weather"),
 
     path('projects/', ProjectListView.as_view(), name='project-list' ),

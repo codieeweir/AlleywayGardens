@@ -5,18 +5,6 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.auth.hashers import make_password
 from django.contrib.contenttypes.models import ContentType
 
-class UserSerializer(ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["id", "first_name", "last_name", "email", "username", "password"]
-        extra_kwargs = {"password": {"write_only": True}}
-
-    def create(self, validated_data):
-        validated_data["is_active"] = False  # Set user as inactive
-        user = User.objects.create_user(**validated_data)
-        return user
-
-
 class MessageSerializer(ModelSerializer):
     class Meta:
         model = Message
@@ -30,11 +18,25 @@ class ProjectSerializer(ModelSerializer):
             "id",
             "name",
             "description",
+            "location",
             "shape",
             "created",
             "updated",
             "message",
         ]
+
+class UserSerializer(ModelSerializer):
+    project = ProjectSerializer(many=True, read_only=True, source="project_set") 
+    class Meta:
+        model = User
+        fields = ["id", "first_name", "last_name", "email", "username", "password", "project"]
+        extra_kwargs = {"password": {"write_only": True}}
+
+    def create(self, validated_data):
+        validated_data["is_active"] = False  # Set user as inactive
+        user = User.objects.create_user(**validated_data)
+        return user
+
 
 
 class ZoneSerializer(ModelSerializer):
