@@ -19,6 +19,7 @@ class ProjectSerializer(ModelSerializer):
             "name",
             "description",
             "location",
+            "project_type",
             "shape",
             "created",
             "updated",
@@ -26,10 +27,10 @@ class ProjectSerializer(ModelSerializer):
         ]
 
 class UserSerializer(ModelSerializer):
-    project = ProjectSerializer(many=True, read_only=True, source="project_set") 
+    # project = ProjectSerializer(many=True, read_only=True, source="project_set") 
     class Meta:
         model = User
-        fields = ["id", "first_name", "last_name", "email", "username", "password", "project"]
+        fields = ["id", "first_name", "last_name", "email", "username", "password"]
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
