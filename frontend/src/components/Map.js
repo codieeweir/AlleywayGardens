@@ -14,6 +14,9 @@ import "leaflet-draw/dist/leaflet.draw.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import L from "leaflet";
 import { Link } from "react-router-dom";
+import IconBlue from "../assets/Blue-Icon.png";
+import IconRed from "../assets/Red-Icon.png";
+import IconGreen from "../assets/Green-Icon.png";
 
 // Predefined zone coordinates for filtering
 const zoneCoordinates = {
@@ -25,6 +28,36 @@ const zoneCoordinates = {
 
 // Default map view
 const defaultView = { centre: [54.6, -5.9], zoom: 12 };
+
+const markerIcons = {
+  "Alleyway Garden": new L.Icon({
+    iconRetinaUrl: IconBlue,
+
+    iconSize: [30, 40],
+    shadowSize: [50, 64],
+    iconAnchor: [22, 94],
+    shadowAnchor: [4, 62],
+    popupAnchor: [-3, -76],
+  }),
+  "Communal Garden": new L.Icon({
+    iconRetinaUrl: IconGreen,
+
+    iconSize: [30, 40],
+    shadowSize: [50, 64],
+    iconAnchor: [22, 94],
+    shadowAnchor: [4, 62],
+    popupAnchor: [-3, -76],
+  }),
+  "Personal Garden Project": new L.Icon({
+    iconRetinaUrl: IconRed,
+
+    iconSize: [30, 40],
+    shadowSize: [50, 64],
+    iconAnchor: [22, 94],
+    shadowAnchor: [4, 62],
+    popupAnchor: [-3, -76],
+  }),
+};
 
 delete L.Icon.Default.prototype._getIconURL;
 
@@ -201,6 +234,7 @@ const Map = ({ projects, selectedZone }) => {
                     JSON.parse(project.location).coordinates[1], // Latitude
                     JSON.parse(project.location).coordinates[0], // Longitude
                   ]}
+                  icon={markerIcons[project.project_type]}
                 >
                   <Popup>
                     <h5>{project.name}</h5>

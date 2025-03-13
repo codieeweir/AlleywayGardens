@@ -14,6 +14,7 @@ const CreateProject = () => {
     shape: shape || "",
     host: 2,
     location: location,
+    project_type: "",
   });
 
   const handleChange = (e) => {
@@ -56,20 +57,36 @@ const CreateProject = () => {
           required
         />
 
-        <label>Shape</label>
+        <label>
+          Project Type:
+          <select
+            name="project_type"
+            value={formData.project_type}
+            onChange={handleChange}
+            required
+          >
+            <option disabled value="">
+              Select...
+            </option>
+            <option value="Alleyway Garden">Alleyway Garden</option>
+            <option value="Communal Garden">Communal Garden</option>
+            <option value="Personal Garden Project">
+              Personal Garden Project
+            </option>
+          </select>
+        </label>
+
         <textarea
           name="shape"
           value={formData.shape}
           onChange={handleChange}
-          readOnly
+          hidden
         />
-
-        <label>location</label>
         <textarea
           name="location"
           value={formData.location}
           onChange={handleChange}
-          readOnly
+          hidden
         />
 
         <button type="submit">Create Project</button>

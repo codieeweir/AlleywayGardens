@@ -17,6 +17,7 @@ class Project(models.Model):
     host = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     zone = models.ForeignKey(Zone, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=200)
+    project_type = models.CharField(max_length=50, null=True)
     description = models.TextField(null=True, blank= True)
     participants = models.ManyToManyField(User, related_name='participants', blank=True) 
     location = models.PointField(srid=4326, null=True, blank=True, default=Point(-5.93012, 54.5973))
