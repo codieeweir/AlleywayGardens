@@ -9,6 +9,7 @@ const CreatePost = () => {
     body: "",
     user: 1,
     project: null,
+    zone: null,
   });
 
   const handleChange = (e) => {
@@ -17,11 +18,11 @@ const CreatePost = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch("http://127.0.0.1:8000/api/posts/", {
+    const response = await fetch(`http://127.0.0.1:8000/api/posts/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer your-token-here",
+        //Authorization: "Bearer your-token-here",
       },
       body: JSON.stringify(formData),
     });
