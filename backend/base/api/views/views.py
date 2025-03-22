@@ -106,6 +106,32 @@ class ProjectCreateView(generics.CreateAPIView):
 
         return Response(serializer.data)
     
+
+class ProjectUpdateView(generics.UpdateAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+
+    def update(self, request, *args, **kwargs):
+        project = self.get_object()
+
+        serializer = self.get_serializer(project, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(serializer.data)
+
+class ProjectDeleteView(generics.DestroyAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+
+    def delete(self, request, *args, **kwargs):
+        project = self.get_object()
+        self.perform_destroy(project)
+
+        return Response(
+            {'message': 'Project Deleted Successfully'}, status=status.HTTP_200_OK
+        )
+    
 class ProjectListView(generics.ListAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer

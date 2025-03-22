@@ -32,7 +32,7 @@ const defaultView = { centre: [54.6, -5.9], zoom: 12 };
 const markerIcons = {
   "Alleyway Garden": new L.Icon({
     iconRetinaUrl: IconBlue,
-
+    iconUrl: IconBlue,
     iconSize: [30, 40],
     shadowSize: [50, 64],
     iconAnchor: [22, 94],
@@ -41,6 +41,7 @@ const markerIcons = {
   }),
   "Communal Garden": new L.Icon({
     iconRetinaUrl: IconGreen,
+    iconUrl: IconGreen,
 
     iconSize: [30, 40],
     shadowSize: [50, 64],
@@ -50,7 +51,7 @@ const markerIcons = {
   }),
   "Personal Garden Project": new L.Icon({
     iconRetinaUrl: IconRed,
-
+    iconUrl: IconRed,
     iconSize: [30, 40],
     shadowSize: [50, 64],
     iconAnchor: [22, 94],
