@@ -12,8 +12,8 @@ from datetime import datetime
 from django.http import JsonResponse
 from rest_framework import generics, viewsets, status, permissions
 from django.utils.encoding import force_bytes, force_str
-from base.models import Project, User, Zone, Post, Message, Comment, Image
-from ..serializers import ProjectSerializer, UserSerializer, ZoneSerializer, PostSerializer, MessageSerializer, CommentSerializer, ImageUploadSerializer
+from base.models import Project, User, Zone, Post, Message, Comment, Image, ProjectPost
+from ..serializers import ProjectSerializer, UserSerializer, ZoneSerializer, PostSerializer, MessageSerializer, CommentSerializer, ImageUploadSerializer, ProjectPostSerializer
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.auth.tokens import default_token_generator as token_generator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -55,6 +55,10 @@ class ZoneViewSet(viewsets.ModelViewSet):
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+
+class ProjectPostViewSet(viewsets.ModelViewSet):
+    queryset = ProjectPost.objects.all()
+    serializer_class = ProjectPostSerializer
 
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()

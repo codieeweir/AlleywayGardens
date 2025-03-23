@@ -31,6 +31,21 @@ class Project(models.Model):
     def __str__(self):
         return self.name
     
+class ProjectPost(models.Model):
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True)
+    body = models.TextField()
+    updated = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-updated', '-created']
+        
+    
+    def __str__(self):
+        return self.body[0:50]
+    
     
 class Message(models.Model):
 
@@ -64,6 +79,8 @@ class Post(models.Model):
     
     def __str__(self):
         return self.body[0:50]
+
+
     
 class Comment(models.Model):
 

@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
-from base.models import Project, User, Zone, Post, Message, Comment, Image
+from base.models import Project, User, Zone, Post, Message, Comment, Image, ProjectPost
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.auth.hashers import make_password
 from django.contrib.contenttypes.models import ContentType
@@ -25,6 +25,13 @@ class ProjectSerializer(ModelSerializer):
             "updated",
             "message",
         ]
+
+class ProjectPostSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProjectPost
+        fields = '__all__'
+
 
 class UserSerializer(ModelSerializer):
     # project = ProjectSerializer(many=True, read_only=True, source="project_set") 

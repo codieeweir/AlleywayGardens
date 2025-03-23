@@ -1,7 +1,7 @@
 from django.urls import path, include
 from ..views import views
 from rest_framework.routers import DefaultRouter
-from ..views.views import  register_user, ImageUploadView, get_project_images, ProjectDeleteView, get_post_images, get_user_images, get_project_weather, UserCommentsView, UserMessagesView, UserPostsView, UserProjectsView,activate_user, password_reset_request, password_reset_confirm, ZoneViewSet, UserViewSet, PostViewSet, MessageViewSet, CommentViewSet, ProjectListView,  ProjectCreateView, ProjectDetailView, ProjectUpdateView, MyTokenObtainPairView
+from ..views.views import  register_user, ImageUploadView, ProjectPostViewSet, get_project_images, ProjectDeleteView, get_post_images, get_user_images, get_project_weather, UserCommentsView, UserMessagesView, UserPostsView, UserProjectsView,activate_user, password_reset_request, password_reset_confirm, ZoneViewSet, UserViewSet, PostViewSet, MessageViewSet, CommentViewSet, ProjectListView,  ProjectCreateView, ProjectDetailView, ProjectUpdateView, MyTokenObtainPairView
 from ..urls.routes import getRoutes
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
@@ -13,6 +13,8 @@ router.register(r'zones', ZoneViewSet)
 router.register(r'posts', PostViewSet)
 router.register(r'messages', MessageViewSet)
 router.register(r'comments', CommentViewSet)
+router.register(r'projectposts', ProjectPostViewSet)
+
 
 
 urlpatterns = [
@@ -20,7 +22,7 @@ urlpatterns = [
 
     path('users/', UserViewSet.as_view({'get': 'list', 'post': 'create'}), name='user-list'),
     path('users/<int:pk>/', UserViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='user-detail'),
-     path("users/<int:user_id>/projects/", UserProjectsView.as_view(), name="user-projects"),
+    path("users/<int:user_id>/projects/", UserProjectsView.as_view(), name="user-projects"),
     path("users/<int:user_id>/messages/", UserMessagesView.as_view(), name="user-messages"),
     path("users/<int:user_id>/posts/", UserPostsView.as_view(), name="user-posts"),
     path("users/<int:user_id>/comments/", UserCommentsView.as_view(), name="user-comments"),
@@ -30,6 +32,10 @@ urlpatterns = [
 
     path('posts/', PostViewSet.as_view({'get': 'list', 'post': 'create'}), name='post-list'),
     path('posts/<int:pk>/', PostViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='post-detail'),
+
+    
+    path('projectposts/', ProjectPostViewSet.as_view({'get': 'list', 'post': 'create'}), name='projectpost-list'),
+    path('projectposts/<int:pk>/', ProjectPostViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='projectpost-detail'),
 
     path('messages/', MessageViewSet.as_view({'get': 'list', 'post': 'create'}), name='message-list'),
     path('messages/<int:pk>/', MessageViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='message-detail'),
