@@ -5,34 +5,6 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.auth.hashers import make_password
 from django.contrib.contenttypes.models import ContentType
 
-class MessageSerializer(ModelSerializer):
-    class Meta:
-        model = Message
-        fields = '__all__'
-
-class ProjectSerializer(ModelSerializer):
-    message = MessageSerializer(many=True, read_only=True, source="message_set") 
-    class Meta:
-        model = Project
-        fields =[
-            "id",
-            "name",
-            "description",
-            "location",
-            "project_type",
-            "shape",
-            "created",
-            "updated",
-            "message",
-        ]
-
-class ProjectPostSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = ProjectPost
-        fields = '__all__'
-
-
 class UserSerializer(ModelSerializer):
     # project = ProjectSerializer(many=True, read_only=True, source="project_set") 
     class Meta:
@@ -44,6 +16,45 @@ class UserSerializer(ModelSerializer):
         validated_data["is_active"] = False  # Set user as inactive
         user = User.objects.create_user(**validated_data)
         return user
+
+
+class MessageSerializer(ModelSerializer):
+    class Meta:
+        model = Message
+        fields = '__all__'
+
+class ProjectPostSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProjectPost
+        fields = '__all__'
+
+class ProjectSerializer(ModelSerializer):
+    participants = serializers.SerializerMethodField() 
+    message = MessageSerializer(many=True, read_only=True, source="message_set") 
+    post = ProjectPostSerializer(many=True, read_only=True, source="projectpost_set") 
+    class Meta:
+        model = Project
+        fields =[
+            "id",
+            "name",
+            "description",
+            "location",
+            "project_type",
+            "participants",
+            "shape",
+            "created",
+            "updated",
+            "message",
+            "post",
+            "host"
+
+        ]
+    
+    def get_participants(self, obj):
+        return [{"id": user.id, "username": user.username} for user in obj.participants.all()]
+
+
 
 
 

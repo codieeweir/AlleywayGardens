@@ -4,11 +4,18 @@ import openmeteo_requests
 import requests_cache
 import pandas as pd
 import logging
+from django.views.decorators.csrf import csrf_exempt
+from django.core.mail import send_mail
 from retry_requests import retry
 from rest_framework.decorators import api_view
+from django.utils.crypto import get_random_string
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from django.core.cache import cache
+from django.conf import settings
 from datetime import datetime
+from django.views import View
+from django.middleware.csrf import get_token
 from django.http import JsonResponse
 from rest_framework import generics, viewsets, status, permissions
 from django.utils.encoding import force_bytes, force_str
@@ -24,6 +31,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
+from django.contrib.auth.decorators import login_required
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -269,6 +277,12 @@ def get_post_images(request, post_id):
 @api_view(["GET"])
 def get_user_images(request, user_id):
     images = Image.objects.filter(object_id=user_id, content_type__model='user')
+    serializer = ImageUploadSerializer(images, many=True)
+    return Response(serializer.data)
+
+@api_view(["GET"])
+def get_projectpost_images(request, post_id):
+    images = Image.objects.filter(object_id=post_id, content_type__model='projectpost')
     serializer = ImageUploadSerializer(images, many=True)
     return Response(serializer.data)
 

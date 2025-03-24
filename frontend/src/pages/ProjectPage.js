@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import ProjectMap from "../components/ProjectMap";
 import ImageUpload from "../components/ImageUpload";
 import ProjectImages from "../components/ProjectImages";
+import ProjectPostImages from "../components/ProjectPostImages";
 import WeatherMetrics from "../components/WeatherMetrics";
 import "./../styles/ProjectPage.css";
 import AuthContext from "../context/AuthContext";
@@ -14,9 +15,12 @@ const Projects = () => {
   let { user } = useContext(AuthContext);
   const [project, setProjects] = useState(null);
   const [newMessage, setNewMessage] = useState("");
+  const [newPost, setNewPost] = useState("");
   const { id } = useParams();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const { authTokens } = useContext(AuthContext);
 
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/api/projects/${id}/`)
@@ -46,7 +50,7 @@ const Projects = () => {
       const messageData = await response.json();
       setProjects((prevProject) => ({
         ...prevProject,
-        messages: [...(prevProject.messages || []), messageData],
+        messages: [...(prevProject.message || []), messageData],
       }));
       setNewMessage("");
     } else {
@@ -88,24 +92,111 @@ const Projects = () => {
     }
   };
 
+  const handlePostSubmit = async (e) => {
+    e.preventDefault();
+    if (!newPost.trim()) return;
+
+    const response = await fetch("http://127.0.0.1:8000/api/projectposts/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // Authorization:
+      },
+      body: JSON.stringify({
+        body: newPost,
+        project: id,
+        user: user.user_id,
+      }),
+    });
+
+    if (response.ok) {
+      const postData = await response.json();
+
+      if (selectedImage) {
+        const formData = new FormData();
+        formData.append("image", selectedImage);
+        formData.append("content_type", "projectpost");
+        formData.append("object_id", parseInt(postData.id));
+
+        await fetch("http://127.0.0.1:8000/api/upload-image/", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${authTokens?.access}`,
+          },
+          body: formData,
+        });
+      }
+
+      setProjects((prevProject) => ({
+        ...prevProject,
+        posts: [...(prevProject.post || []), postData],
+      }));
+      setNewPost("");
+      setSelectedImage(null);
+    } else {
+      console.error("Failed to Post");
+    }
+  };
+
+  const handlePostDelete = async (postID) => {
+    const response = await fetch(
+      `http://127.0.0.1:8000/api/projectposts/${postID}/`,
+      {
+        method: "DELETE",
+      }
+    );
+
+    if (response.ok) {
+      navigate(`/projects/${id}`);
+    } else {
+      console.error("Failed to delete project");
+    }
+  };
+
+  const followProjectSubmit = async (user_id) => {
+    await fetch(`http://127.0.0.1:8000/api/projects/update/${id}/`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${authTokens?.access}`,
+      },
+    });
+  };
+
   return (
     <div className="project-page">
       <h1 className="project-title">{project.name}</h1>
       <p className="project-description">{project.description}</p>
 
-      {/* Project Map */}
       <div className="project-map">
         <ProjectMap project={project} />
       </div>
 
-      {/* Image Upload Section */}
       <div className="image-upload-section">
         <h3>Upload Project Image</h3>
         <ImageUpload contentType="project" objectId={id} />
         <ProjectImages projectId={project.id} />
       </div>
 
-      {/* Chat Box Section */}
+      <div className="chat-box">
+        <h3>Project Participants</h3>
+        {project.participants && project.participants.length > 0 ? (
+          project.participants.map((ptp) => (
+            <div key={ptp.id}>
+              <p>{ptp.username}</p>
+            </div>
+          ))
+        ) : (
+          <p>No Participants yet</p>
+        )}
+        <button
+          onClick={() => {
+            followProjectSubmit(user.id);
+          }}
+        >
+          Follow project
+        </button>
+      </div>
+
       <div className="chat-box-section">
         <h3>Project Chat Box</h3>
         <div className="chat-box">
@@ -123,7 +214,6 @@ const Projects = () => {
           )}
         </div>
 
-        {/* Message Input Form */}
         <form onSubmit={handleSubmit} className="chat-form">
           <label htmlFor="message-input">Type your message:</label>
           <textarea
@@ -132,6 +222,47 @@ const Projects = () => {
             onChange={(e) => setNewMessage(e.target.value)}
             required
           />
+          <button type="submit" className="send-message-button">
+            Send
+          </button>
+        </form>
+      </div>
+      <div className="image-upload-section">
+        <h3>Project Posts</h3>
+        <div>
+          {project.post && project.post.length > 0 ? (
+            project.post.map((post) => (
+              <div key={post.id} className="chat-message">
+                <p>{post.body}</p>
+                <ProjectPostImages PostId={post.id} />
+                <button onClick={() => handlePostDelete(post.id)}>
+                  Delete Post
+                </button>
+              </div>
+            ))
+          ) : (
+            <p>No Posts yet</p>
+          )}
+        </div>
+
+        <form onSubmit={handlePostSubmit}>
+          <label htmlFor="post-input">
+            Type your Post:
+            <textarea
+              id="post-input"
+              value={newPost}
+              onChange={(e) => setNewPost(e.target.value)}
+              required
+            />
+          </label>
+          <label htmlFor="post-image">
+            <input
+              type="file"
+              id="post-image"
+              accept="image/*"
+              onChange={(e) => setSelectedImage(e.target.files[0])}
+            />
+          </label>
           <button type="submit" className="send-message-button">
             Send
           </button>
