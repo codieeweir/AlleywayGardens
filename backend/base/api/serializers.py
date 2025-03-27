@@ -30,7 +30,9 @@ class ProjectPostSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProjectSerializer(ModelSerializer):
-    participants = serializers.SerializerMethodField() 
+    participants = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), many=True, required=False
+    )  
     message = MessageSerializer(many=True, read_only=True, source="message_set") 
     post = ProjectPostSerializer(many=True, read_only=True, source="projectpost_set") 
     class Meta:
@@ -50,6 +52,11 @@ class ProjectSerializer(ModelSerializer):
             "host"
 
         ]
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["participants"] = [{"id": user.id, "username": user.username} for user in instance.participants.all()]
+        return data
     
     def get_participants(self, obj):
         return [{"id": user.id, "username": user.username} for user in obj.participants.all()]

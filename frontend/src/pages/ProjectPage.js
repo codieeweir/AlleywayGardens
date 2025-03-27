@@ -224,6 +224,30 @@ const Projects = () => {
     }
   };
 
+  const addParticipants = async (user_id) => {
+    const participantData = { participants: [user_id] };
+
+    const response = await fetch(
+      `http://127.0.0.1:8000/api/projects/update/${id}/`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(participantData),
+      }
+    );
+    console.log(participantData);
+
+    if (response.ok) {
+      const updatedProject = await response.json();
+      console.log("Response:", updatedProject);
+    } else {
+      console.error(
+        "Failed to update project participants",
+        await response.json()
+      );
+    }
+  };
+
   return (
     <div className="project-page">
       <h1 className="project-title">{project.name}</h1>
@@ -254,6 +278,9 @@ const Projects = () => {
         ) : (
           <p>{project.host}</p>
         )}
+        <button onClick={() => addParticipants(user.user_id)}>
+          Join Project?
+        </button>
       </div>
 
       <div className="chat-box-section">

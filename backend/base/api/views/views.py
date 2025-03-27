@@ -78,15 +78,6 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 ## Custom Views for React
 
-## Custom User Views 
-
-# class updateUserProfileView(generics.UpdateAPIView):
-#     queryset = User.objects.all()
-#     serializer_class = UserUpdateSerializer
-
-#     def get_object(self):
-#         return self.request.user
-
 ##Project Views 
 
 class ProjectDetailView(generics.RetrieveAPIView):
@@ -121,9 +112,16 @@ class ProjectCreateView(generics.CreateAPIView):
 
                 data["location"] = GEOSGeometry(json.dumps(location_data))
 
+        participants_data = data.pop("participants", [])
+        if isinstance(participants_data, int):
+            participants_data = [participants_data]
+        
+
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        project = serializer.save()
+
+        project.participants.set(participants_data)
 
         return Response(serializer.data)
     
@@ -134,6 +132,15 @@ class ProjectUpdateView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         project = self.get_object()
+        existing_participants = list(project.participants.values_list("id", flat=True))
+        new_participants = request.data.get("participants", [])
+
+        if not isinstance(new_participants, list):
+            return Response({"error" : "participants must be a list"}, status=400)
+        
+        request.data["participants"] = list(set(existing_participants + new_participants))
+        
+
 
         serializer = self.get_serializer(project, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
