@@ -18,6 +18,9 @@ const ForumPost = () => {
   const [newComment, setNewComment] = useState("");
   const [editingCommentID, setEditingCommentID] = useState(null);
   const [editedComment, setEditedComment] = useState({ body: "" });
+  const [selectedImage, setSelectedImage] = useState(null);
+  const { authTokens } = useContext(AuthContext);
+  const [imageRefreshTrigger, setImageRefreshTrigger] = useState(false);
 
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/api/posts/${id}/`)
@@ -64,10 +67,27 @@ const ForumPost = () => {
       body: JSON.stringify(updatedData),
     });
 
+    if (selectedImage) {
+      const formData = new FormData();
+      formData.append("image", selectedImage);
+      formData.append("content_type", "post");
+      formData.append("object_id", parseInt(id));
+
+      await fetch("http://127.0.0.1:8000/api/upload-image/", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${authTokens?.access}`,
+        },
+        body: formData,
+      });
+      setImageRefreshTrigger((prev) => !prev);
+    }
+
     if (response.ok) {
       const updatedPost = await response.json();
       setPost(updatedPost);
       setIsEditing(false);
+      setSelectedImage(null);
     } else {
       console.error("Failed to update post");
     }
@@ -75,6 +95,11 @@ const ForumPost = () => {
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
+
+    if (!authTokens?.access) {
+      navigate("/login");
+      return;
+    }
 
     const response = await fetch("http://127.0.0.1:8000/api/comments/", {
       method: "POST",
@@ -173,6 +198,15 @@ const ForumPost = () => {
             value={editedPost.body}
             onChange={handleChange}
           />
+          <PostImages postId={post.id} refreshTrigger={imageRefreshTrigger} />
+          <label htmlFor="post-image">
+            <input
+              type="file"
+              id="post-image"
+              accept="image/*"
+              onChange={(e) => setSelectedImage(e.target.files[0])}
+            />
+          </label>
           <button onClick={handleSave}>Save</button>
           <button onClick={() => setIsEditing(false)}>Cancel</button>
         </>
@@ -180,6 +214,7 @@ const ForumPost = () => {
         <>
           <h1>{post.title}</h1>
           <p>{post.body}</p>
+          <PostImages postId={post.id} refreshTrigger={imageRefreshTrigger} />
         </>
       )}
       <div className="chat-box">
@@ -209,16 +244,22 @@ const ForumPost = () => {
                   <>
                     <p>{cmt.body}</p>
                     <div>
-                      {canEdit && (
-                        <button
-                          onClick={() => handleCommentEdit(cmt.id, cmt.body)}
-                        >
-                          Edit Comment
-                        </button>
+                      {user.user_id === cmt.user && (
+                        <>
+                          {canEdit && (
+                            <button
+                              onClick={() =>
+                                handleCommentEdit(cmt.id, cmt.body)
+                              }
+                            >
+                              Edit Comment
+                            </button>
+                          )}
+                          <button onClick={() => handleCommentDelete(cmt.id)}>
+                            Delete
+                          </button>
+                        </>
                       )}
-                      <button onClick={() => handleCommentDelete(cmt.id)}>
-                        Delete
-                      </button>
                     </div>
                   </>
                 )}
@@ -229,22 +270,28 @@ const ForumPost = () => {
           <p>No Comments Yet</p>
         )}
       </div>
-      <form onSubmit={handleCommentSubmit}>
-        <label htmlFor="message-input">Type your Comment:</label>
-        <textarea
-          id="message-input"
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          required
-        />
-        <button type="submit" className="send-message-button">
-          Post
-        </button>
-      </form>
-      <PostImages postId={post.id} />
-      <ImageUpload contentType="post" objectId={id} />
-      <button onClick={handleDelete}>Delete Post</button>
-      <button onClick={() => setIsEditing(true)}>Edit Post</button>
+      {user?.user_id && (
+        <>
+          <form onSubmit={handleCommentSubmit}>
+            <label htmlFor="message-input">Type your Comment:</label>
+            <textarea
+              id="message-input"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              required
+            />
+            <button type="submit" className="send-message-button">
+              Post
+            </button>
+          </form>
+        </>
+      )}
+      {user?.user_id && user.user_id === post.user && (
+        <>
+          <button onClick={handleDelete}>Delete Post</button>
+          <button onClick={() => setIsEditing(true)}>Edit Post</button>
+        </>
+      )}
     </div>
   );
 };

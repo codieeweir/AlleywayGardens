@@ -13,25 +13,31 @@ import ConfirmModel from "../components/ConfirmModel";
 
 const Projects = () => {
   let { user } = useContext(AuthContext);
-  const [project, setProjects] = useState(null);
+  const [project, setProject] = useState(null);
   const [newMessage, setNewMessage] = useState("");
   const [newPost, setNewPost] = useState("");
   const { id } = useParams();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [editedPost, setEditedPost] = useState({ body: "" });
+  const [editingPostID, setEditingPostID] = useState(null);
   const { authTokens } = useContext(AuthContext);
 
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/api/projects/${id}/`)
       .then((response) => response.json())
-      .then((data) => setProjects(data))
+      .then((data) => setProject(data))
       .catch((error) => console.error("Error fetching projects :", error));
   }, [id]);
 
-  const handleSubmit = async (e) => {
+  const handleMessageSubmit = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+
+    if (!authTokens?.access) {
+      navigate("/login");
+      return;
+    }
 
     const response = await fetch("http://127.0.0.1:8000/api/messages/", {
       method: "POST",
@@ -48,9 +54,9 @@ const Projects = () => {
 
     if (response.ok) {
       const messageData = await response.json();
-      setProjects((prevProject) => ({
+      setProject((prevProject) => ({
         ...prevProject,
-        messages: [...(prevProject.message || []), messageData],
+        message: [...(prevProject.message || []), messageData],
       }));
       setNewMessage("");
     } else {
@@ -96,6 +102,11 @@ const Projects = () => {
     e.preventDefault();
     if (!newPost.trim()) return;
 
+    if (!authTokens?.access) {
+      navigate("/login");
+      return;
+    }
+
     const response = await fetch("http://127.0.0.1:8000/api/projectposts/", {
       method: "POST",
       headers: {
@@ -127,9 +138,9 @@ const Projects = () => {
         });
       }
 
-      setProjects((prevProject) => ({
+      setProject((prevProject) => ({
         ...prevProject,
-        posts: [...(prevProject.post || []), postData],
+        post: [...(prevProject.post || []), postData],
       }));
       setNewPost("");
       setSelectedImage(null);
@@ -153,27 +164,82 @@ const Projects = () => {
     }
   };
 
-  const followProjectSubmit = async (user_id) => {
-    await fetch(`http://127.0.0.1:8000/api/projects/update/${id}/`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${authTokens?.access}`,
-      },
-    });
+  const handlePostEdit = async (postId, originalBody) => {
+    if (!editingPostID) {
+      setEditingPostID(postId);
+      setEditedPost({ body: originalBody });
+      console.log(originalBody);
+      return;
+    }
+    if (editedPost.body !== originalBody) {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/projectposts/${postId}/`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            body: editedPost,
+            project: id,
+            user: user.user_id,
+          }),
+        }
+      );
+
+      console.log({ body: editedPost, user_id: user.user_id });
+
+      if (response.ok) {
+        const updatedPost = await response.json();
+        setProject((prevProject) => ({
+          ...prevProject,
+          post: prevProject.post.map((post) =>
+            post.id === postId ? updatedPost : post
+          ),
+        }));
+        setEditingPostID(null);
+        setEditedPost("");
+        setSelectedImage(null);
+      } else {
+        console.error("Failed to update post");
+        console.log(editedPost.body);
+        console.log("body:", originalBody);
+      }
+    }
+    setEditingPostID(null);
+    setEditedPost("");
+
+    if (selectedImage) {
+      const formData = new FormData();
+      formData.append("image", selectedImage);
+      formData.append("content_type", "projectpost");
+      formData.append("object_id", parseInt(postId));
+
+      await fetch("http://127.0.0.1:8000/api/upload-image/", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${authTokens?.access}`,
+        },
+        body: formData,
+      });
+      setSelectedImage(null);
+    }
   };
 
   return (
     <div className="project-page">
       <h1 className="project-title">{project.name}</h1>
       <p className="project-description">{project.description}</p>
-
+      <p></p>
       <div className="project-map">
         <ProjectMap project={project} />
       </div>
 
       <div className="image-upload-section">
-        <h3>Upload Project Image</h3>
-        <ImageUpload contentType="project" objectId={id} />
+        {user?.user_id === project?.host && (
+          <>
+            <h3>Upload Project Image</h3>
+            <ImageUpload contentType="project" objectId={id} />
+          </>
+        )}
         <ProjectImages projectId={project.id} />
       </div>
 
@@ -186,15 +252,8 @@ const Projects = () => {
             </div>
           ))
         ) : (
-          <p>No Participants yet</p>
+          <p>{project.host}</p>
         )}
-        <button
-          onClick={() => {
-            followProjectSubmit(user.id);
-          }}
-        >
-          Follow project
-        </button>
       </div>
 
       <div className="chat-box-section">
@@ -204,9 +263,13 @@ const Projects = () => {
             project.message.map((msg) => (
               <div key={msg.id} className="chat-message">
                 <p>{msg.body}</p>
-                <button onClick={() => handleMessageDelete(msg.id)}>
-                  Delete Message
-                </button>
+                {user?.user_id && user.user_id === msg.user && (
+                  <>
+                    <button onClick={() => handleMessageDelete(msg.id)}>
+                      Delete Message
+                    </button>
+                  </>
+                )}
               </div>
             ))
           ) : (
@@ -214,7 +277,7 @@ const Projects = () => {
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="chat-form">
+        <form onSubmit={handleMessageSubmit} className="chat-form">
           <label htmlFor="message-input">Type your message:</label>
           <textarea
             id="message-input"
@@ -233,11 +296,47 @@ const Projects = () => {
           {project.post && project.post.length > 0 ? (
             project.post.map((post) => (
               <div key={post.id} className="chat-message">
-                <p>{post.body}</p>
-                <ProjectPostImages PostId={post.id} />
-                <button onClick={() => handlePostDelete(post.id)}>
-                  Delete Post
-                </button>
+                {editingPostID === post.id ? (
+                  <>
+                    <textarea
+                      value={editedPost.body}
+                      onChange={(e) => setEditedPost(e.target.value)}
+                    />
+                    <ProjectPostImages PostId={post.id} />
+                    <label htmlFor="post-image">
+                      <input
+                        type="file"
+                        id="post-image"
+                        accept="image/*"
+                        onChange={(e) => setSelectedImage(e.target.files[0])}
+                      />
+                    </label>
+                    <button onClick={() => handlePostEdit(post.id, post.body)}>
+                      Save
+                    </button>
+                    <button onClick={() => setEditingPostID(null)}>
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p>{post.body}</p>
+                    <ProjectPostImages PostId={post.id} />
+                    <p>Posted by {post.user.username}</p>
+                    {user?.user_id && user.user_id === post.user && (
+                      <>
+                        <button onClick={() => handlePostDelete(post.id)}>
+                          Delete Post
+                        </button>
+                        <button
+                          onClick={() => handlePostEdit(post.id, post.body)}
+                        >
+                          Update Post
+                        </button>
+                      </>
+                    )}
+                  </>
+                )}
               </div>
             ))
           ) : (
@@ -278,16 +377,20 @@ const Projects = () => {
           <p>No Weather data yet</p>
         )}
       </div>
-      <Link to={`/projects-update?id=${project.id}`}>
-        <button>Update this Project?</button>
-      </Link>
-      <button onClick={() => setIsModalOpen(true)}>Delete Project</button>
+      {user?.user_id && user.user_id === project.host && (
+        <>
+          <Link to={`/projects-update?id=${project.id}`}>
+            <button>Update this Project?</button>
+          </Link>
+          <button onClick={() => setIsModalOpen(true)}>Delete Project</button>
 
-      <ConfirmModel
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onConfirm={handleDelete}
-      />
+          <ConfirmModel
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onConfirm={handleDelete}
+          />
+        </>
+      )}
     </div>
   );
 };

@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import AuthContext from "../context/AuthContext";
 
 const CreatePost = () => {
   const navigate = useNavigate();
+  const [selectedImage, setSelectedImage] = useState(null);
+  let { user } = useContext(AuthContext);
+  const { authTokens } = useContext(AuthContext);
 
   const [formData, setFormData] = useState({
     title: "",
     body: "",
-    user: 1,
+    user: user.user_id,
     project: null,
     zone: null,
   });
@@ -28,9 +32,23 @@ const CreatePost = () => {
     });
 
     if (response.ok) {
-      navigate("/");
-    } else {
-      console.error("Failed to create post");
+      const postData = await response.json();
+
+      if (selectedImage) {
+        const formData = new FormData();
+        formData.append("image", selectedImage);
+        formData.append("content_type", "post");
+        formData.append("object_id", parseInt(postData.id));
+
+        await fetch("http://127.0.0.1:8000/api/upload-image/", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${authTokens?.access}`,
+          },
+          body: formData,
+        });
+      }
+      navigate(`/forum-post/${postData.id}`);
     }
   };
 
@@ -54,6 +72,14 @@ const CreatePost = () => {
           onChange={handleChange}
           required
         />
+        <label htmlFor="post-image">
+          <input
+            type="file"
+            id="post-image"
+            accept="image/*"
+            onChange={(e) => setSelectedImage(e.target.files[0])}
+          />
+        </label>
         <button type="submit">Post on Forum</button>
       </form>
     </div>

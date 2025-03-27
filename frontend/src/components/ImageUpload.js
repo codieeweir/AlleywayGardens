@@ -1,9 +1,11 @@
 import { useContext, useState } from "react";
 import AuthContext from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const ImageUpload = ({ contentType, objectId }) => {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const navigate = useNavigate();
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -18,6 +20,11 @@ const ImageUpload = ({ contentType, objectId }) => {
     }
 
     setUploading(true);
+
+    if (!authTokens?.access) {
+      navigate("/login");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("image", file);
