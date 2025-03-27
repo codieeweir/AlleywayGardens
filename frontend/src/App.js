@@ -17,6 +17,7 @@ import PasswordReset from "./pages/PasswordReset";
 import PasswordResetConfirm from "./pages/PasswordResetConfirm";
 import ProjectsPage from "./pages/Projects";
 import EditProject from "./pages/EditProject";
+import EditProfile from "./pages/EditProfile";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 
@@ -29,16 +30,17 @@ function App() {
         <Navbar />
         <Routes>
           <Route element={<PrivateRoute isAuthenticated={isAuthenticated} />}>
-            <Route path="/" element={<Home />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/create-post" element={<CreatePost />} />
+            <Route path="/create-project" element={<CreateProject />} />
           </Route>
+          <Route path="/" element={<Home />} />
+          <Route path="/profileInformation" element={<EditProfile />} />
           <Route path="/projects/:id" element={<Projects />} />
           <Route path="/projects" element={<ProjectsPage />} />
-          <Route path="/create-project" element={<CreateProject />} />
           <Route path="/projects-update" element={<EditProject />} />
           <Route path="/forum" element={<Forum />} />
-          <Route path="/profile" element={<Profile />} />
           <Route path="/forum-post/:id" element={<ForumPost />} />
-          <Route path="/create-post" element={<CreatePost />} />
           <Route path="/login" element={<AuthPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/password-reset" element={<PasswordReset />} />

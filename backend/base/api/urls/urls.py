@@ -1,7 +1,7 @@
 from django.urls import path, include
 from ..views import views
 from rest_framework.routers import DefaultRouter
-from ..views.views import  register_user, ImageUploadView, ProjectPostViewSet, get_project_images, get_projectpost_images,ProjectDeleteView, get_post_images, get_user_images, get_project_weather, UserCommentsView, UserMessagesView, UserPostsView, UserProjectsView,activate_user, password_reset_request, password_reset_confirm, ZoneViewSet, UserViewSet, PostViewSet, MessageViewSet, CommentViewSet, ProjectListView,  ProjectCreateView, ProjectDetailView, ProjectUpdateView, MyTokenObtainPairView
+from ..views.views import  register_user, ImageUploadView, ImageDeleteView, ProjectPostViewSet, get_project_images, get_projectpost_images,ProjectDeleteView, get_post_images, user_images_view, get_project_weather, UserCommentsView, UserMessagesView, UserPostsView, UserProjectsView,activate_user, password_reset_request, password_reset_confirm, ZoneViewSet, UserViewSet, PostViewSet, MessageViewSet, CommentViewSet, ProjectListView,  ProjectCreateView, ProjectDetailView, ProjectUpdateView, MyTokenObtainPairView
 from ..urls.routes import getRoutes
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
@@ -20,8 +20,8 @@ router.register(r'projectposts', ProjectPostViewSet)
 urlpatterns = [
     path('', getRoutes, name='api-routes'),
 
-    path('users/', UserViewSet.as_view({'get': 'list', 'post': 'create'}), name='user-list'),
-    path('users/<int:pk>/', UserViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='user-detail'),
+    path('users/', UserViewSet.as_view({'get': 'list', 'post': 'create', 'put': 'update'}), name='user-list'),
+    path('users/<int:pk>/', UserViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy', 'patch': 'partial_update'}), name='user-detail'),
     path("users/<int:user_id>/projects/", UserProjectsView.as_view(), name="user-projects"),
     path("users/<int:user_id>/messages/", UserMessagesView.as_view(), name="user-messages"),
     path("users/<int:user_id>/posts/", UserPostsView.as_view(), name="user-posts"),
@@ -51,9 +51,10 @@ urlpatterns = [
     path("password-reset-confirm/<uidb64>/<token>/", password_reset_confirm, name="password_reset_confirm"),
 
     path('upload-image/', ImageUploadView.as_view(), name='upload-image' ),
+    path('delete-image/<int:pk>/', ImageDeleteView.as_view(), name='delete-image' ),
     path("project-images/<int:project_id>/", get_project_images, name="project-images"),
     path("post-images/<int:post_id>/", get_post_images, name="post-images"),
-    path("user-images/<int:user_id>/", get_user_images, name="user-images"),
+    path("user-images/<int:user_id>/", user_images_view, name="user-images"),
     path("projectpost-images/<int:post_id>/", get_projectpost_images, name="projectpost-images"),
     path("project_weather/<int:project_id>/", get_project_weather, name="project-weather"),
 

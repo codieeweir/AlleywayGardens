@@ -4,6 +4,7 @@ import AuthContext from "../context/AuthContext";
 import "./../styles/ProjectPage.css";
 import ImageUpload from "../components/ImageUpload";
 import UserImages from "../components/UserImages";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   let { user } = useContext(AuthContext);
@@ -11,6 +12,11 @@ const Profile = () => {
   const [posts, setPosts] = useState([]);
   const [comments, setComments] = useState([]);
   const [profile, setProfile] = useState(null);
+  const [images, setImages] = useState([]);
+  const { authTokens } = useContext(AuthContext);
+  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/api/users/${user.user_id}/`)
@@ -32,11 +38,59 @@ const Profile = () => {
       .then((response) => response.json())
       .then((data) => setPosts(data))
       .catch((error) => console.error("Error fetching projects :", error));
+
+    fetch(`http://127.0.0.1:8000/api/user-images/${user.user_id}/`)
+      .then((response) => response.json())
+      .then((data) => setImages(data))
+      .catch((error) => console.error("Error fetching projects :", error));
   }, [user.user_id]);
 
   if (!profile) {
     return <div>Loading...</div>;
   }
+
+  const handleUpdate = async () => {
+    if (!file) {
+      alert("Please select an image");
+      return;
+    }
+
+    setUploading(true);
+
+    const formData = new FormData();
+    formData.append("image", file);
+    formData.append("content_type", "user");
+    formData.append("object_id", parseInt(user.user_id));
+
+    console.log([...formData.entries()]);
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/user-images/${user.user_id}/`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${authTokens?.access}`,
+          },
+          body: formData,
+        }
+      );
+
+      const responseData = await response.json();
+
+      if (response.ok) {
+        alert("Image Uploaded Sucesssfully");
+        setFile(null);
+      } else {
+        console.error("Upload Failed:", responseData);
+        alert("Upload Failed");
+      }
+    } catch (error) {
+      console.error("Error Uploading Image :", error);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <div>
@@ -44,17 +98,36 @@ const Profile = () => {
         <h3 className="text-center mb-4">
           <h3>
             {" "}
-            Hello {user.firstname} {user.surname}{" "}
+            Hello {profile.first_name} {profile.last_name}{" "}
           </h3>
-          <h3>@{user.username}</h3>
+          <h3>@{profile.username}</h3>
         </h3>
       </header>
       <div>
         <p>
-          <UserImages user_id={user.user_id} /> Edit your profile picture
-          <ImageUpload contentType="user" objectId={user.user_id} />
+          <UserImages user_id={user.user_id} />
+          {images.length > 0 ? (
+            <div>
+              <label htmlFor="post-image">
+                <input
+                  type="file"
+                  id="post-image"
+                  accept="image/*"
+                  onChange={(e) => setFile(e.target.files[0])}
+                />
+              </label>
+              <button onClick={handleUpdate} disabled={uploading}>
+                {uploading ? "Updating..." : "Edit your profile picture"}
+              </button>
+            </div>
+          ) : (
+            <ImageUpload contentType="user" objectId={user.user_id} />
+          )}
         </p>
-        <Link to={`/profileInformation`} className="btn btn-primary">
+        <Link
+          to={`/profileInformation?id=${user.user_id}`}
+          className="btn btn-primary"
+        >
           Edit profile information
         </Link>
       </div>
@@ -101,7 +174,7 @@ const Profile = () => {
                     <p>
                       {user.firstname} posted in the community forum :{" "}
                       <Link
-                        to={`/posts/${posts.id}`}
+                        to={`/forum-post/${posts.id}`}
                         className="btn btn-primary"
                       >
                         {posts.title}
@@ -122,7 +195,7 @@ const Profile = () => {
                 <div className="card shadow-sm">
                   <div className="card-body">
                     <p>
-                      {user.firstname} commented on a post :{" "}
+                      {profile.first_name} commented on a post :{" "}
                       <b>{comment.body}</b>
                     </p>
                   </div>

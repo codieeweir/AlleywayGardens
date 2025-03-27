@@ -16,7 +16,7 @@ class UserSerializer(ModelSerializer):
         validated_data["is_active"] = False  # Set user as inactive
         user = User.objects.create_user(**validated_data)
         return user
-
+    
 
 class MessageSerializer(ModelSerializer):
     class Meta:
@@ -85,7 +85,7 @@ class ImageUploadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Image
-        fields = ['image', 'content_type', 'object_id']
+        fields = ['image', 'content_type', 'object_id', "id", "user"]
         read_only_fields = ['id', 'user', 'uploaded_at']
 
     def create(self, validated_data):
