@@ -32,7 +32,7 @@ const WeatherMetrics = ({ project_id }) => {
 
   return (
     <div className="weather-metrics">
-      <h3>Weather Metrics</h3>
+      <h3>7 Day Forecast</h3>
       {weatherData.map((entry, index) => (
         <div key={index} className="weather-entry">
           <p>

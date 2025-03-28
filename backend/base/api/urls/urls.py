@@ -1,7 +1,7 @@
 from django.urls import path, include
 from ..views import views
 from rest_framework.routers import DefaultRouter
-from ..views.views import  register_user, ImageUploadView, ImageDeleteView, ProjectPostViewSet, get_project_images, get_projectpost_images,ProjectDeleteView, get_post_images, user_images_view, get_project_weather, UserCommentsView, UserMessagesView, UserPostsView, UserProjectsView,activate_user, password_reset_request, password_reset_confirm, ZoneViewSet, UserViewSet, PostViewSet, MessageViewSet, CommentViewSet, ProjectListView,  ProjectCreateView, ProjectDetailView, ProjectUpdateView, MyTokenObtainPairView
+from ..views.views import  register_user, ImageUploadView, ImageDeleteView, ProjectPostViewSet, get_project_images, get_projectpost_images,ProjectDeleteView, get_post_images, user_images_view, get_project_weather, UserCommentsView, UserMessagesView, UserPostsView, UserProjectsView,activate_user, password_reset_request, password_reset_confirm, get_project_weather__monthly_averages,ZoneViewSet, UserViewSet, PostViewSet, MessageViewSet, CommentViewSet, ProjectListView,  ProjectCreateView, ProjectDetailView, ProjectUpdateView, MyTokenObtainPairView
 from ..urls.routes import getRoutes
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
@@ -57,6 +57,7 @@ urlpatterns = [
     path("user-images/<int:user_id>/", user_images_view, name="user-images"),
     path("projectpost-images/<int:post_id>/", get_projectpost_images, name="projectpost-images"),
     path("project_weather/<int:project_id>/", get_project_weather, name="project-weather"),
+    path("project_weather_averages/<int:project_id>/", get_project_weather__monthly_averages, name="project-weather_averages"),
 
     path('projects/', ProjectListView.as_view(), name='project-list' ),
     path('projects/create/', ProjectCreateView.as_view(), name='project-create'),
