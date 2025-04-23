@@ -32,7 +32,7 @@ const WeatherAverages = ({ project_id }) => {
 
   return (
     <div className="weather-metrics">
-      <h3>Monthly Weather Metrics</h3>
+      <h3>Monthly Weather Metrics 🌦️</h3>
       <div className="weather-entry">
         <p>
           🌡️ <strong>Average Max Temperature:</strong>{" "}

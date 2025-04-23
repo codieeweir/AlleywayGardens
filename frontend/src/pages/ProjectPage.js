@@ -10,11 +10,15 @@ import AuthContext from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import ConfirmModel from "../components/ConfirmModel";
+import WeatherAverages from "../components/WeatherAverages";
+import { formatDistanceToNow } from "date-fns";
+import { Container, Row, Col, Card, Button, Form } from "react-bootstrap";
 
 const Projects = () => {
   let { user } = useContext(AuthContext);
   const [project, setProject] = useState(null);
   const [newMessage, setNewMessage] = useState("");
+  const [participant, setParticipant] = useState("");
   const [newPost, setNewPost] = useState("");
   const { id } = useParams();
   const navigate = useNavigate();
@@ -75,7 +79,7 @@ const Projects = () => {
     );
 
     if (response.ok) {
-      navigate("/");
+      navigate("/projects");
     } else {
       console.error("Failed to delete project");
     }
@@ -111,7 +115,7 @@ const Projects = () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // Authorization:
+        Authorization: `Bearer ${authTokens?.access}`,
       },
       body: JSON.stringify({
         body: newPost,
@@ -158,7 +162,10 @@ const Projects = () => {
     );
 
     if (response.ok) {
-      navigate(`/projects/${id}`);
+      setProject((prevProject) => ({
+        ...prevProject,
+        post: prevProject.post.filter((post) => post.id !== postID),
+      }));
     } else {
       console.error("Failed to delete project");
     }
@@ -238,7 +245,35 @@ const Projects = () => {
     console.log(participantData);
 
     if (response.ok) {
-      const updatedProject = await response.json();
+      const refresh = await fetch(`http://127.0.0.1:8000/api/projects/${id}/`);
+      const updatedProject = await refresh.json();
+      alert(`Welcome to ' ${project.name} ' `);
+      console.log("Response:", updatedProject);
+    } else {
+      console.error(
+        "Failed to update project participants",
+        await response.json()
+      );
+    }
+  };
+
+  const deleteParticipants = async (user_id) => {
+    const participantData = { participants: [user_id] };
+
+    const response = await fetch(
+      `http://127.0.0.1:8000/api/projects/update/${id}/`,
+      {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(participantData),
+      }
+    );
+    console.log(participantData);
+
+    if (response.ok) {
+      const refresh = await fetch(`http://127.0.0.1:8000/api/projects/${id}/`);
+      const updatedProject = await refresh.json();
+      alert(`You are no longer involved with '${project.name}' `);
       console.log("Response:", updatedProject);
     } else {
       console.error(
@@ -249,176 +284,260 @@ const Projects = () => {
   };
 
   return (
-    <div className="project-page">
-      <h1 className="project-title">{project.name}</h1>
-      <p className="project-description">{project.description}</p>
-      <p></p>
-      <div className="project-map">
-        <ProjectMap project={project} />
-      </div>
-
-      <div className="image-upload-section">
-        {user?.user_id === project?.host && (
-          <>
-            <h3>Upload Project Image</h3>
-            <ImageUpload contentType="project" objectId={id} />
-          </>
-        )}
-        <ProjectImages projectId={project.id} />
-      </div>
-
-      <div className="chat-box">
-        <h3>Project Participants</h3>
-        {project.participants && project.participants.length > 0 ? (
-          project.participants.map((ptp) => (
-            <div key={ptp.id}>
-              <p>{ptp.username}</p>
-            </div>
-          ))
-        ) : (
-          <p>{project.host}</p>
-        )}
-        <button onClick={() => addParticipants(user.user_id)}>
-          Join Project?
-        </button>
-      </div>
-
-      <div className="chat-box-section">
-        <h3>Project Chat Box</h3>
-        <div className="chat-box">
-          {project.message && project.message.length > 0 ? (
-            project.message.map((msg) => (
-              <div key={msg.id} className="chat-message">
-                <p>{msg.body}</p>
-                {user?.user_id && user.user_id === msg.user && (
-                  <>
-                    <button onClick={() => handleMessageDelete(msg.id)}>
-                      Delete Message
-                    </button>
-                  </>
-                )}
+    <Container className="mt-5">
+      <Row>
+        <Col md={8}>
+          <Card className="mb-3 shadow-sm">
+            <Card.Body>
+              <h3>{project.name} </h3>
+              <p>Hosted By @{project.user.username}</p>
+              <p>{project.description}</p>
+              <div className="mb-3">
+                <ProjectMap project={project} />
               </div>
-            ))
-          ) : (
-            <p>No messages yet</p>
-          )}
-        </div>
+            </Card.Body>
+          </Card>
 
-        <form onSubmit={handleMessageSubmit} className="chat-form">
-          <label htmlFor="message-input">Type your message:</label>
-          <textarea
-            id="message-input"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            required
-          />
-          <button type="submit" className="send-message-button">
-            Send
-          </button>
-        </form>
-      </div>
-      <div className="image-upload-section">
-        <h3>Project Posts</h3>
-        <div>
-          {project.post && project.post.length > 0 ? (
-            project.post.map((post) => (
-              <div key={post.id} className="chat-message">
-                {editingPostID === post.id ? (
-                  <>
-                    <textarea
-                      value={editedPost.body}
-                      onChange={(e) => setEditedPost(e.target.value)}
-                    />
-                    <ProjectPostImages PostId={post.id} />
-                    <label htmlFor="post-image">
-                      <input
-                        type="file"
-                        id="post-image"
-                        accept="image/*"
-                        onChange={(e) => setSelectedImage(e.target.files[0])}
-                      />
-                    </label>
-                    <button onClick={() => handlePostEdit(post.id, post.body)}>
-                      Save
-                    </button>
-                    <button onClick={() => setEditingPostID(null)}>
-                      Cancel
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <p>{post.body}</p>
-                    <ProjectPostImages PostId={post.id} />
-                    <p>Posted by {post.user.username}</p>
-                    {user?.user_id && user.user_id === post.user && (
+          <Card className="mb-3 shadow-sm">
+            <Card.Body>
+              <h5>Project Images</h5>
+              <ProjectImages projectId={project.id} showSingle={false} />
+              {user?.user_id === project?.host && (
+                <>
+                  <ImageUpload contentType="project" objectId={project.id} />
+                </>
+              )}
+            </Card.Body>
+          </Card>
+
+          <Card className="mb-3 shadow-sm">
+            <Card.Body>
+              <h5>Project Posts</h5>
+              {project.post?.length > 0 ? (
+                project.post.map((post) => (
+                  <div key={post.id} className="border p-2 rounded mb-2">
+                    {editingPostID === post.id ? (
                       <>
-                        <button onClick={() => handlePostDelete(post.id)}>
-                          Delete Post
-                        </button>
-                        <button
+                        <textarea
+                          value={editedPost.body}
+                          onChange={(e) => setEditedPost(e.target.value)}
+                          className="form-control mb-2"
+                        />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="form-control mb-2"
+                          onChange={(e) => setSelectedImage(e.target.files[0])}
+                        />
+                        <ProjectPostImages PostId={post.id} />
+                        <Button
                           onClick={() => handlePostEdit(post.id, post.body)}
+                          variant="success"
+                          className="me-2"
                         >
-                          Update Post
-                        </button>
+                          Save
+                        </Button>
+                        <Button
+                          onClick={() => setEditingPostID(null)}
+                          variant="secondary"
+                        >
+                          Cancel
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <small className="text-muted">
+                          Posted by {post.users.username}{" "}
+                          {formatDistanceToNow(new Date(post.created), {
+                            addSuffix: true,
+                          })}
+                        </small>
+                        <p>{post.body}</p>
+                        <ProjectPostImages PostId={post.id} />
+                        {user?.user_id === post.users.id && (
+                          <div className="mt-2">
+                            <Button
+                              onClick={() => handlePostDelete(post.id)}
+                              variant="danger"
+                              className="me-2"
+                            >
+                              Delete
+                            </Button>
+                            <Button
+                              onClick={() => handlePostEdit(post.id, post.body)}
+                              variant="warning"
+                            >
+                              Update
+                            </Button>
+                          </div>
+                        )}
                       </>
                     )}
-                  </>
+                  </div>
+                ))
+              ) : (
+                <p>No posts yet</p>
+              )}
+              {user?.user_id && (
+                <Form onSubmit={handlePostSubmit} className="mt-3">
+                  <Form.Group>
+                    <Form.Label>Type your Post:</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      value={newPost}
+                      onChange={(e) => setNewPost(e.target.value)}
+                      required
+                    />
+                  </Form.Group>
+                  <Form.Group controlId="post-image" className="mt-2">
+                    <Form.Label>Upload an Image:</Form.Label>
+                    <Form.Control
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setSelectedImage(e.target.files[0])}
+                    />
+                  </Form.Group>
+                  <Button type="submit" className="mt-2">
+                    Send
+                  </Button>
+                </Form>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+
+        <Col md={4}>
+          <Card className="mb-3 shadow-sm">
+            <Card.Body>
+              <h5>Project Participants</h5>
+              {project.participants?.length > 0 ? (
+                project.participants.map((ptp) => (
+                  <p key={ptp.id}>
+                    {" "}
+                    <a href={`/profile/${ptp.id}`}>@{ptp.username}</a>
+                  </p>
+                ))
+              ) : (
+                <p>{project.host}</p>
+              )}
+              {user?.user_id && (
+                <div>
+                  {project.participants?.some(
+                    (ptp) => ptp.id === user?.user_id
+                  ) ? (
+                    <Button
+                      onClick={() => deleteParticipants(user.user_id)}
+                      className="mt-2"
+                      variant="danger"
+                    >
+                      Leave Project?
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => addParticipants(user.user_id)}
+                      className="mt-2"
+                      variant="success"
+                    >
+                      Join Project?
+                    </Button>
+                  )}
+                </div>
+              )}
+            </Card.Body>
+          </Card>
+          <Card className="mb-3 shadow-sm">
+            <Card.Body>
+              <h5>Weather Metrics ☀️</h5>
+              <WeatherMetrics project_id={project.id} />
+            </Card.Body>
+          </Card>
+
+          <Card className="mb-3 shadow-sm">
+            <Card.Body>
+              <WeatherAverages project_id={project.id} />
+            </Card.Body>
+          </Card>
+          <Card className="mb-3 shadow-sm">
+            <Card.Body>
+              <h5>Project Chat Box</h5>
+              <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+                {project.message?.length > 0 ? (
+                  project.message.map((msg) => (
+                    <div key={msg.id} className="border p-2 rounded mb-2">
+                      <bold className="text-muted">@{msg.users.username}</bold>
+                      <small className="text-muted">
+                        {" "}
+                        {formatDistanceToNow(new Date(msg.created), {
+                          addSuffix: true,
+                        })}
+                      </small>
+                      <p>{msg.body}</p>
+
+                      {user?.user_id === msg.users.id && (
+                        <Button
+                          onClick={() => handleMessageDelete(msg.id)}
+                          variant="danger"
+                          size="sm"
+                          className="mt-2"
+                        >
+                          Delete
+                        </Button>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p>No messages yet</p>
                 )}
               </div>
-            ))
-          ) : (
-            <p>No Posts yet</p>
+              {user?.user_id ? (
+                <Form onSubmit={handleMessageSubmit} className="mt-3">
+                  <Form.Group>
+                    <Form.Label>Type your message:</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      required
+                      rows="3"
+                    />
+                  </Form.Group>
+                  <Button type="submit" className="mt-2">
+                    Send
+                  </Button>
+                </Form>
+              ) : (
+                <h6>
+                  {" "}
+                  To Message, please <a href="/login"> Log in</a>{" "}
+                </h6>
+              )}
+            </Card.Body>
+          </Card>
+
+          {user?.user_id === project.host && (
+            <>
+              <Link to={`/projects-update?id=${project.id}`}>
+                <Button className="w-100 mb-2" variant="warning">
+                  Update this Project
+                </Button>
+              </Link>
+              <Button
+                onClick={() => setIsModalOpen(true)}
+                className="w-100"
+                variant="danger"
+              >
+                Delete Project
+              </Button>
+              <ConfirmModel
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onConfirm={handleDelete}
+              />
+            </>
           )}
-        </div>
-
-        <form onSubmit={handlePostSubmit}>
-          <label htmlFor="post-input">
-            Type your Post:
-            <textarea
-              id="post-input"
-              value={newPost}
-              onChange={(e) => setNewPost(e.target.value)}
-              required
-            />
-          </label>
-          <label htmlFor="post-image">
-            <input
-              type="file"
-              id="post-image"
-              accept="image/*"
-              onChange={(e) => setSelectedImage(e.target.files[0])}
-            />
-          </label>
-          <button type="submit" className="send-message-button">
-            Send
-          </button>
-        </form>
-      </div>
-
-      {/* Weather Metrics Section */}
-
-      <div className="weather-metrics-section">
-        {project.shape && project.shape.length > 0 ? (
-          <WeatherMetrics project_id={project.id} />
-        ) : (
-          <p>No Weather data yet</p>
-        )}
-      </div>
-      {user?.user_id && user.user_id === project.host && (
-        <>
-          <Link to={`/projects-update?id=${project.id}`}>
-            <button>Update this Project?</button>
-          </Link>
-          <button onClick={() => setIsModalOpen(true)}>Delete Project</button>
-
-          <ConfirmModel
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onConfirm={handleDelete}
-          />
-        </>
-      )}
-    </div>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

@@ -1,11 +1,24 @@
 import { useState, useEffect, useContext } from "react";
 import AuthContext from "../context/AuthContext";
+import ImageEnlargeModal from "./ImageEnlargeModal";
 
-const ProjectImages = ({ projectId, refreshTrigger }) => {
+const ProjectImages = ({ projectId, refreshTrigger, showSingle }) => {
   const [images, setImages] = useState([]);
   const { authTokens } = useContext(AuthContext);
   let { user } = useContext(AuthContext);
   const [project, setProject] = useState();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedImageID, setSelectedImageID] = useState(null);
+
+  const openModal = (imageID) => {
+    setSelectedImageID(imageID);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedImageID(null);
+  };
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -56,36 +69,57 @@ const ProjectImages = ({ projectId, refreshTrigger }) => {
 
   return (
     <div>
-      <h3>Project Images</h3>
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
         {images.length > 0 ? (
           images.map((image) => (
-            <div>
+            <div
+              style={{ position: "relative", display: "inline-block" }}
+              key={image.id}
+            >
               <img
-                key={images.id}
                 src={`http://127.0.0.1:8000${image.image}`}
                 alt="Project"
+                onClick={() => openModal(image.id)}
                 style={{
-                  width: "150px",
-                  height: "100px",
+                  width: "250px",
+                  height: "auto",
                   objectFit: "cover",
                   borderRadius: "8px",
+                  cursor: "pointer",
                 }}
               />
+
               {(user?.user_id === image.user ||
                 user?.user_id === project?.host) && (
-                <>
-                  <button onClick={() => handleDelete(image.id)}>
-                    Delete Image {image.id}
-                  </button>
-                </>
+                <button
+                  onClick={() => handleDelete(image.id)}
+                  style={{
+                    position: "absolute",
+                    top: "5px",
+                    right: "5px",
+                    background: "rgba(90, 73, 73, 0.7)",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "50%",
+                    padding: "5px 8px",
+                    cursor: "pointer",
+                    fontSize: "16px",
+                  }}
+                >
+                  X
+                </button>
               )}
             </div>
           ))
         ) : (
-          <p> No Images yet for this project. </p>
+          <p>No Images yet for this project.</p>
         )}
       </div>
+      <ImageEnlargeModal
+        isOpen={isModalOpen}
+        imageID={selectedImageID}
+        onClose={closeModal}
+      />
     </div>
   );
 };

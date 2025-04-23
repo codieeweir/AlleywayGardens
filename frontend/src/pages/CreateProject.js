@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import AuthContext from "../context/AuthContext";
 
 const CreateProject = () => {
   const [searchParams] = useSearchParams();
@@ -7,14 +8,16 @@ const CreateProject = () => {
 
   const shape = searchParams.get("geometry");
   const location = searchParams.get("location");
+  let { user } = useContext(AuthContext);
 
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     shape: shape || "",
-    host: 2,
+    host: user.user_id,
     location: location,
     project_type: "",
+    participants: user.user_id,
   });
 
   const handleChange = (e) => {
@@ -30,67 +33,86 @@ const CreateProject = () => {
     });
 
     if (response.ok) {
-      navigate("/");
+      const postData = await response.json();
+      navigate(`/projects/${postData.id}`);
     } else {
       console.error("Failed to create project");
     }
   };
 
   return (
-    <div>
-      <h1>Create a New Project</h1>
-      <form onSubmit={handleSubmit}>
-        <label>Project Name:</label>
-        <input
-          type="text"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          required
-        />
+    <div
+      className="container d-flex justify-content-center align-items-center"
+      style={{ minHeight: "75vh" }}
+    >
+      <div
+        className="card shadow-md p-4 text-center mb-4"
+        style={{ width: "100%", maxWidth: "400px" }}
+      >
+        <h3 className="text-center mb-4">Create Your Project</h3>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <label>Project Name:</label>
+            <div>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
 
-        <label>Description:</label>
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          required
-        />
+          <div className="mb-3">
+            <label>Description:</label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <label>
-          Project Type:
-          <select
-            name="project_type"
-            value={formData.project_type}
+          <div className="mb-3">
+            <label>
+              Project Type:
+              <div>
+                <select
+                  name="project_type"
+                  value={formData.project_type}
+                  onChange={handleChange}
+                  required
+                >
+                  <option disabled value="">
+                    Select...
+                  </option>
+                  <option value="Alleyway Garden">Alleyway Garden</option>
+                  <option value="Communal Garden">Communal Garden</option>
+                  <option value="Personal Garden Project">
+                    Personal Garden Project
+                  </option>
+                </select>
+              </div>
+            </label>
+          </div>
+
+          <textarea
+            name="shape"
+            value={formData.shape}
             onChange={handleChange}
-            required
-          >
-            <option disabled value="">
-              Select...
-            </option>
-            <option value="Alleyway Garden">Alleyway Garden</option>
-            <option value="Communal Garden">Communal Garden</option>
-            <option value="Personal Garden Project">
-              Personal Garden Project
-            </option>
-          </select>
-        </label>
+            hidden
+          />
+          <textarea
+            name="location"
+            value={formData.location}
+            onChange={handleChange}
+            hidden
+          />
 
-        <textarea
-          name="shape"
-          value={formData.shape}
-          onChange={handleChange}
-          hidden
-        />
-        <textarea
-          name="location"
-          value={formData.location}
-          onChange={handleChange}
-          hidden
-        />
-
-        <button type="submit">Create Project</button>
-      </form>
+          <button type="submit">Create Project</button>
+        </form>
+      </div>
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import "./../styles/ProjectPage.css";
+import ProjectImagePreviews from "../components/ImagePreview";
 
 const ProjectsPage = () => {
   const [projects, setProjects] = useState([]);
@@ -21,7 +22,7 @@ const ProjectsPage = () => {
   return (
     <section className="projects">
       <div className="container">
-        <h2 className="text-center mb-4">Project List</h2>
+        <h2 className="text-center mb-4">Check Out Our Projects!</h2>
         <div className="d-flex justify-content-center gap-3 my-3">
           <button
             onClick={() => setProjectType("Alleyway Garden")}
@@ -68,13 +69,9 @@ const ProjectsPage = () => {
           {filteredProjects.map((project) => (
             <div key={project.id} className="col-md-4 mb-4">
               <div className="card shadow-sm">
-                <img
-                  src="https://via.placeholder.com/350x200"
-                  className="card-img-top"
-                  alt={project.name}
-                />
+                <ProjectImagePreviews projectId={project.id} />
                 <div className="card-body">
-                  <h5 className="card-title">{project.name}</h5>
+                  <strong className="project-title">{project.name}</strong>
                   <p className="card-text">{project.description}</p>
                   <Link
                     to={`/projects/${project.id}`}

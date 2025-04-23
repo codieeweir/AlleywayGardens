@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import AuthContext from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -6,6 +6,7 @@ const ImageUpload = ({ contentType, objectId }) => {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -47,6 +48,9 @@ const ImageUpload = ({ contentType, objectId }) => {
       if (response.ok) {
         alert("Image Uploaded Sucesssfully");
         setFile(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
       } else {
         console.error("Upload Failed:", responseData);
         alert("Upload Failed");
@@ -59,11 +63,26 @@ const ImageUpload = ({ contentType, objectId }) => {
   };
 
   return (
-    <div>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload} disabled={uploading}>
-        {uploading ? "Uploading ..." : "Upload"}
-      </button>
+    <div className="mb-3">
+      <label htmlFor="fileInput" className="form-label">
+        Upload File
+      </label>
+      <div className="input-group">
+        <input
+          type="file"
+          className="form-control"
+          id="fileInput"
+          onChange={handleFileChange}
+          ref={fileInputRef}
+        />
+        <button
+          className="btn btn-success btn-sm"
+          onClick={handleUpload}
+          disabled={uploading}
+        >
+          {uploading ? "Uploading..." : "Upload"}
+        </button>
+      </div>
     </div>
   );
 };

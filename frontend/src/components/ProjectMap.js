@@ -27,7 +27,7 @@ const ProjectMap = ({ project }) => {
     <MapContainer
       center={[54.6, -5.9]}
       zoom={12}
-      style={{ height: "400px", width: "50%" }}
+      style={{ height: "400px", width: "100%%" }}
     >
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       {project?.shape && (

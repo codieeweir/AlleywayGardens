@@ -53,42 +53,64 @@ const EditProject = () => {
   };
 
   return (
-    <div>
-      <h1>Update Your Project</h1>
-      <form onSubmit={handleSubmit}>
-        <label>Project Name:</label>
-        <input
-          type="text"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-        />
+    <div
+      className="container d-flex justify-content-center align-items-center"
+      style={{ minHeight: "75vh" }}
+    >
+      <div
+        className="card shadow-md p-4 text-center mb-4"
+        style={{ width: "100%", maxWidth: "400px" }}
+      >
+        <h2>Update Your Project</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <label>Project Name:</label>
+            <div>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
 
-        <label>
-          Description:
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-          />
-        </label>
-        <label>
-          Project Type:
-          <select
-            name="project_type"
-            value={formData.project_type}
-            onChange={handleChange}
-          >
-            <option disabled value=""></option>
-            <option value="Alleyway Garden">Alleyway Garden</option>
-            <option value="Communal Garden">Communal Garden</option>
-            <option value="Personal Garden Project">
-              Personal Garden Project
-            </option>
-          </select>
-        </label>
-        <button type="submit">Update Project</button>
-      </form>
+          <div className="mb-3">
+            <label>Description:</label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="mb-3">
+            <label>
+              Project Type:
+              <div>
+                <select
+                  name="project_type"
+                  value={formData.project_type}
+                  onChange={handleChange}
+                  required
+                >
+                  <option disabled value="">
+                    Select...
+                  </option>
+                  <option value="Alleyway Garden">Alleyway Garden</option>
+                  <option value="Communal Garden">Communal Garden</option>
+                  <option value="Personal Garden Project">
+                    Personal Garden Project
+                  </option>
+                </select>
+              </div>
+            </label>
+          </div>
+          <button type="submit">Update Project</button>
+        </form>
+      </div>
     </div>
   );
 };

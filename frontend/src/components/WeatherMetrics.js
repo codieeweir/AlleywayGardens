@@ -4,6 +4,7 @@ const WeatherMetrics = ({ project_id }) => {
   const [weatherData, setWeatherData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedDay, setSelectedDay] = useState(null); // Track which day is selected
 
   useEffect(() => {
     const fetchWeatherData = async () => {
@@ -12,7 +13,7 @@ const WeatherMetrics = ({ project_id }) => {
           `http://127.0.0.1:8000/api/project_weather/${project_id}/`
         );
         if (!response.ok) {
-          alert("Couldnt fetch data");
+          alert("Couldn't fetch data");
         }
         const data = await response.json();
         setWeatherData(data);
@@ -30,39 +31,58 @@ const WeatherMetrics = ({ project_id }) => {
   if (error) return <p>Error: {error}</p>;
   if (!weatherData) return <p>No weather data available.</p>;
 
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    return `${day}/${month}`;
+  };
+
   return (
     <div className="weather-metrics">
       <h3>7 Day Forecast</h3>
-      {weatherData.map((entry, index) => (
-        <div key={index} className="weather-entry">
+      <div className="day-buttons">
+        {weatherData.map((entry, index) => (
+          <button
+            key={index}
+            onClick={() => setSelectedDay(index === selectedDay ? null : index)}
+            className="mb-2"
+          >
+            {formatDate(entry.date)}{" "}
+          </button>
+        ))}
+      </div>
+
+      {selectedDay !== null && (
+        <div className="weather-entry">
           <p>
-            <strong>Date:</strong> {entry.date}
+            🌡️ <strong>Max Temperature:</strong>{" "}
+            {weatherData[selectedDay].temperature_2m_max.toFixed(2)} °C
           </p>
           <p>
-            <strong>Max Temperature:</strong>{" "}
-            {entry.temperature_2m_max.toFixed(2)} °C
+            ☀️ <strong>Daylight Duration:</strong>{" "}
+            {(weatherData[selectedDay].daylight_duration / 3600).toFixed(2)}{" "}
+            hours
           </p>
           <p>
-            <strong>Daylight Duration:</strong>{" "}
-            {(entry.daylight_duration / 3600).toFixed(2)} hours
+            🌞<strong>Sunshine Duration:</strong>{" "}
+            {(weatherData[selectedDay].sunshine_duration / 3600).toFixed(2)}{" "}
+            hours
           </p>
           <p>
-            <strong>Sunshine Duration:</strong>{" "}
-            {(entry.sunshine_duration / 3600).toFixed(2)} hours
+            🕶️<strong>UV Index Max:</strong>{" "}
+            {weatherData[selectedDay].uv_index_max.toFixed(2)}
           </p>
           <p>
-            <strong>UV Index Max:</strong> {entry.uv_index_max.toFixed(2)}
+            🌧️ <strong>Precipitation:</strong>{" "}
+            {weatherData[selectedDay].precipitation_sum.toFixed(2)} mm
           </p>
           <p>
-            <strong>Precipitation:</strong> {entry.precipitation_sum.toFixed(2)}{" "}
-            mm
-          </p>
-          <p>
-            <strong>Precipitation Hours:</strong>{" "}
-            {entry.precipitation_hours.toFixed(2)} hours
+            ⏳ <strong>Precipitation Hours:</strong>{" "}
+            {weatherData[selectedDay].precipitation_hours.toFixed(2)} hours
           </p>
         </div>
-      ))}
+      )}
     </div>
   );
 };
