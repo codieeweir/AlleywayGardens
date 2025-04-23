@@ -6,119 +6,61 @@ import ImageUpload from "../components/ImageUpload";
 import UserImages from "../components/UserImages";
 import { useNavigate } from "react-router-dom";
 import ProjectImagePreviews from "../components/ImagePreview";
+import { useParams } from "react-router-dom";
 
-const Profile = () => {
+const ProfileVisit = () => {
   let { user } = useContext(AuthContext);
   const [projects, setProjects] = useState([]);
   const [posts, setPosts] = useState([]);
+  const { id } = useParams();
   const [comments, setComments] = useState([]);
-  const [messages, setMessages] = useState([]);
   const [profile, setProfile] = useState(null);
   const [images, setImages] = useState([]);
   const { authTokens } = useContext(AuthContext);
-  const [file, setFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:8000/api/users/${user.user_id}/`)
+    fetch(`http://127.0.0.1:8000/api/users/${id}/`)
       .then((response) => response.json())
       .then((data) => setProfile(data))
-      .catch((error) => console.error("Error fetching Profile :", error));
+      .catch((error) => console.error("Error fetching projects :", error));
 
-    fetch(`http://127.0.0.1:8000/api/users/${user.user_id}/projects/`)
+    fetch(`http://127.0.0.1:8000/api/users/${id}/projects/`)
       .then((response) => response.json())
       .then((data) => setProjects(data))
       .catch((error) => console.error("Error fetching projects :", error));
 
-    fetch(`http://127.0.0.1:8000/api/users/${user.user_id}/comments/`)
+    fetch(`http://127.0.0.1:8000/api/users/${id}/comments/`)
       .then((response) => response.json())
       .then((data) => setComments(data))
-      .catch((error) => console.error("Error fetching Comments :", error));
+      .catch((error) => console.error("Error fetching projects :", error));
 
-    fetch(`http://127.0.0.1:8000/api/users/${user.user_id}/messages/`)
-      .then((response) => response.json())
-      .then((data) => setMessages(data))
-      .catch((error) => console.error("Error fetching Messages :", error));
-
-    fetch(`http://127.0.0.1:8000/api/users/${user.user_id}/posts/`)
+    fetch(`http://127.0.0.1:8000/api/users/${id}/posts/`)
       .then((response) => response.json())
       .then((data) => setPosts(data))
-      .catch((error) => console.error("Error fetching Posts :", error));
+      .catch((error) => console.error("Error fetching projects :", error));
 
-    fetch(`http://127.0.0.1:8000/api/user-images/${user.user_id}/`)
+    fetch(`http://127.0.0.1:8000/api/user-images/${id}/`)
       .then((response) => response.json())
       .then((data) => setImages(data))
-      .catch((error) => console.error("Error fetching Images :", error));
-  }, [user.user_id]);
+      .catch((error) => console.error("Error fetching projects :", error));
+  }, [id]);
 
   if (!profile) {
     return <div>Loading...</div>;
   }
 
-  const handleUpdate = async () => {
-    if (!file) {
-      alert("Please select an image");
-      return;
-    }
-
-    setUploading(true);
-
-    const formData = new FormData();
-    formData.append("image", file);
-    formData.append("content_type", "user");
-    formData.append("object_id", parseInt(user.user_id));
-
-    console.log([...formData.entries()]);
-
-    try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/user-images/${user.user_id}/`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${authTokens?.access}`,
-          },
-          body: formData,
-        }
-      );
-
-      const responseData = await response.json();
-
-      if (response.ok) {
-        alert("Image Uploaded Sucesssfully");
-        setFile(null);
-      } else {
-        console.error("Upload Failed:", responseData);
-        alert("Upload Failed");
-      }
-    } catch (error) {
-      console.error("Error Uploading Image :", error);
-    } finally {
-      setUploading(false);
-    }
-  };
-
   return (
     <div className="container">
       <header className="text-center">
         <h3>
-          Hello {profile.first_name} {profile.last_name}
+          {profile.first_name} {profile.last_name}'s Profile
         </h3>
         <h3>@{profile.username}</h3>
       </header>
 
       <div className="text-center mt-4">
-        <UserImages user_id={user.user_id} />
-
-        <div className="mt-3">
-          <Link
-            to={`/profileInformation?id=${user.user_id}`}
-            className="btn btn-primary"
-          >
-            Edit profile information
-          </Link>
-        </div>
+        <UserImages user_id={id} />
+        <div className="mt-3"></div>
       </div>
 
       <div className="row mt-5 align-items-start">
@@ -152,9 +94,11 @@ const Profile = () => {
             </div>
           </div>
         </div>
+
         <div className="col-md-4">
           <div className="card shadow-sm p-3">
             <h2 className="text-center mb-3">Recent Activity</h2>
+
             {posts.length > 0 ? (
               posts.map((post) => (
                 <div key={post.id} className="mb-3">
@@ -174,36 +118,13 @@ const Profile = () => {
             )}
 
             <hr />
+
             {comments.length > 0 ? (
               comments.map((comment) => (
                 <div key={comment.id} className="mb-3">
                   <p className="m-0">
                     {profile.first_name} commented:{" "}
-                    <Link
-                      to={`/forum-post/${comment.post}`}
-                      className="btn btn-link p-0"
-                    >
-                      {comment.body}
-                    </Link>
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p className="text-center">No comments yet</p>
-            )}
-
-            <hr />
-            {messages.length > 0 ? (
-              messages.map((msg) => (
-                <div key={msg.id} className="mb-3">
-                  <p className="m-0">
-                    {profile.first_name} added message:
-                    <Link
-                      to={`/projects/${msg.project}`}
-                      className="btn btn-link p-0"
-                    >
-                      {msg.body}
-                    </Link>
+                    <b className="text-muted">{comment.body}</b>
                   </p>
                 </div>
               ))
@@ -217,4 +138,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default ProfileVisit;
