@@ -184,115 +184,170 @@ const ForumPost = () => {
   };
 
   return (
-    <div>
+    <div className="container mt-5">
       {isEditing ? (
-        <>
+        <div className="edit-post-form">
+          <h2>Edit Post</h2>
           <input
             type="text"
             name="title"
+            className="form-control mb-3"
             value={editedPost.title}
             onChange={handleChange}
           />
           <textarea
             name="body"
+            className="form-control mb-3"
+            rows="6"
             value={editedPost.body}
             onChange={handleChange}
           />
           <PostImages postId={post.id} refreshTrigger={imageRefreshTrigger} />
-          <label htmlFor="post-image">
+          <div className="form-group mb-3">
+            <label htmlFor="post-image" className="btn btn-secondary btn-sm">
+              Upload Image
+            </label>
             <input
               type="file"
               id="post-image"
               accept="image/*"
+              className="d-none"
               onChange={(e) => setSelectedImage(e.target.files[0])}
             />
-          </label>
-          <button onClick={handleSave}>Save</button>
-          <button onClick={() => setIsEditing(false)}>Cancel</button>
-        </>
+          </div>
+          <button onClick={handleSave} className="btn btn-primary mb-3">
+            Save Changes
+          </button>
+          <button
+            onClick={() => setIsEditing(false)}
+            className="btn btn-danger mb-3"
+          >
+            Cancel
+          </button>
+        </div>
       ) : (
-        <>
-          <h1>{post.title}</h1>
+        <div className="post-details mb-4">
+          <h1 className="mb-3">{post.title}</h1>
           <p>{post.body}</p>
           <PostImages postId={post.id} refreshTrigger={imageRefreshTrigger} />
-        </>
+        </div>
       )}
-      <div className="chat-box">
-        {post.comments && post.comments.length > 0 ? (
-          post.comments.map((cmt) => {
-            const createdAt = new Date(cmt.created);
-            const timeLaspsed = (new Date() - createdAt) / (1000 * 60);
-            const canEdit = timeLaspsed <= 5;
 
-            return (
-              <div key={cmt.id}>
-                <p>{cmt.user.username} </p>
-                {editingCommentID === cmt.id ? (
-                  <>
-                    <textarea
-                      value={editedComment.body}
-                      onChange={(e) => setEditedComment(e.target.value)}
-                    />
-                    <button onClick={() => handleCommentEdit(cmt.id)}>
-                      Save
-                    </button>
-                    <button onClick={() => setEditingCommentID(null)}>
-                      Cancel
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <p>{cmt.body}</p>
-                    <div>
-                      {user.user_id === cmt.user && (
-                        <>
-                          {canEdit && (
-                            <button
-                              onClick={() =>
-                                handleCommentEdit(cmt.id, cmt.body)
-                              }
-                            >
-                              Edit Comment
-                            </button>
-                          )}
-                          <button onClick={() => handleCommentDelete(cmt.id)}>
-                            Delete
-                          </button>
-                        </>
-                      )}
+      <div className="comments-section mt-4">
+        <h4>Comments</h4>
+        <div className="list-group">
+          {post.comments && post.comments.length > 0 ? (
+            post.comments.map((cmt) => {
+              const createdAt = new Date(cmt.created);
+              const timeLaspsed = (new Date() - createdAt) / (1000 * 60);
+              const canEdit = timeLaspsed <= 5;
+
+              return (
+                <div
+                  key={cmt.id}
+                  className="list-group-item d-flex flex-column mb-3 p-3 border rounded"
+                >
+                  <div className="d-flex justify-content-between">
+                    <strong className="font-weight-bold">
+                      @{cmt.users.username}
+                    </strong>
+                    <small className="text-muted">
+                      {timeLaspsed <= 60
+                        ? `${Math.floor(timeLaspsed)} mins ago`
+                        : `${Math.floor(timeLaspsed / 60)} hours ago`}
+                    </small>
+                  </div>
+                  {editingCommentID === cmt.id ? (
+                    <div className="edit-comment">
+                      <textarea
+                        value={editedComment.body}
+                        onChange={(e) => setEditedComment(e.target.value)}
+                        className="form-control mb-2"
+                      />
+                      <button
+                        onClick={() => handleCommentEdit(cmt.id)}
+                        className="btn btn-primary btn-sm mb-2"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setEditingCommentID(null)}
+                        className="btn btn-secondary btn-sm"
+                      >
+                        Cancel
+                      </button>
                     </div>
-                  </>
-                )}
-              </div>
-            );
-          })
-        ) : (
-          <p>No Comments Yet</p>
-        )}
+                  ) : (
+                    <>
+                      <p>{cmt.body}</p>
+                      <div className="d-flex justify-content-between align-items-center">
+                        {user.user_id === cmt.user && (
+                          <div>
+                            {canEdit && (
+                              <button
+                                onClick={() =>
+                                  handleCommentEdit(cmt.id, cmt.body)
+                                }
+                                className="btn btn-warning btn-sm mr-2"
+                              >
+                                Edit
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleCommentDelete(cmt.id)}
+                              className="btn btn-danger btn-sm"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })
+          ) : (
+            <p className="text-muted">No Comments Yet</p>
+          )}
+        </div>
       </div>
+
       {user?.user_id && (
-        <>
+        <div className="new-comment mt-4">
+          <h6>Comment on this post?</h6>
           <form onSubmit={handleCommentSubmit}>
-            <label htmlFor="message-input">Type your Comment:</label>
             <textarea
               id="message-input"
+              className="form-control mb-3"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               required
+              rows="4"
+              style={{ maxWidth: "500px", width: "100%", height: "30px" }}
             />
-            <button type="submit" className="send-message-button">
-              Post
+            <button type="submit" className="btn btn-success">
+              Post Comment
             </button>
           </form>
-        </>
+        </div>
       )}
+
       {user?.user_id && user.user_id === post.user && (
-        <>
-          <button onClick={handleDelete}>Delete Post</button>
-          <button onClick={() => setIsEditing(true)}>Edit Post</button>
-        </>
+        <div className="post-actions mt-4">
+          <button onClick={handleDelete} className="btn btn-danger mr-2">
+            Delete Post
+          </button>
+          <button
+            onClick={() => setIsEditing(true)}
+            className="btn btn-warning"
+          >
+            Edit Post
+          </button>
+        </div>
       )}
     </div>
   );
 };
+
 export default ForumPost;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import "./../styles/ProjectPage.css";
+import ForumPostPreviews from "../components/ForumImagesPreviews";
 
 const Forum = () => {
   const [posts, setPosts] = useState([]);
@@ -21,37 +22,50 @@ const Forum = () => {
 
   return (
     <div className="container mt-5">
-      <h2 className="mb-4">Community Forum</h2>
+      <h2 className="mb-4 text-center">Community Forum</h2>
 
-      {/* Create Post Button */}
-      <Link to={`/create-post`}>
-        <button className="btn btn-custom mb-4">Create A Post</button>
-      </Link>
+      <div className="text-center mb-4">
+        <Link to={`/create-post`}>
+          <button className="btn btn-success btn-lg">Create A Post</button>
+        </Link>
+      </div>
 
-      {/* Forum Posts */}
-      <div className="list-group">
+      <div className="forum-box shadow-sm p-4">
         {posts.map((post) => {
           const user = users.find((user) => user.id === post.user);
           const timeago = formatDistanceToNow(new Date(post.created), {
             addSuffix: true,
           });
           return (
-            <div key={post.id} className="list-group-item mb-3">
-              <Link
-                to={`/forum-post/${post.id}`}
-                className="h4 text-decoration-none text-dark"
+            <div
+              key={post.id}
+              style={{ backgroundColor: "#edf8f0" }}
+              className="forum-post mb-4 p-3 border rounded position-relative"
+            >
+              <h5 className="mb-2">
+                <Link
+                  to={`/forum-post/${post.id}`}
+                  className="text-dark text-decoration-none"
+                >
+                  {post.title}
+                </Link>
+              </h5>
+              <p>
+                Posted By{" "}
+                <a href="/profile">{user ? user.username : "Unknown"} </a>
+                <small className="text-muted time-stamp">{timeago}</small>
+              </p>
+              <div
+                className="post-body shadow-sm p-4"
+                style={{ backgroundColor: "#c5dacb" }}
               >
-                {post.title}
-              </Link>
-              <p>{post.body}</p>
-              <h6>
-                Posted by {user ? user.username : "Unknown"} - {timeago}
-              </h6>
-              <span className="badge bg-secondary">Zone</span>
-              <h6 className="mt-2">
-                <strong>Total Comments: {post.comments.length}</strong>
-              </h6>
-              <hr />
+                <p>{post.body}</p>
+                <ForumPostPreviews postId={post.id} />
+              </div>
+
+              <div className="mt-2">
+                <strong>{post.comments.length} Comments</strong>
+              </div>
             </div>
           );
         })}

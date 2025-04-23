@@ -26,7 +26,6 @@ const CreatePost = () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        //Authorization: "Bearer your-token-here",
       },
       body: JSON.stringify(formData),
     });
@@ -53,35 +52,48 @@ const CreatePost = () => {
   };
 
   return (
-    <div>
-      <h1>Create a New Post</h1>
-      <form onSubmit={handleSubmit}>
-        <label>Post Title</label>
-        <input
-          type="text"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          required
-        />
-
-        <label>Enter your text here... </label>
-        <textarea
-          name="body"
-          value={formData.body}
-          onChange={handleChange}
-          required
-        />
-        <label htmlFor="post-image">
-          <input
-            type="file"
-            id="post-image"
-            accept="image/*"
-            onChange={(e) => setSelectedImage(e.target.files[0])}
-          />
-        </label>
-        <button type="submit">Post on Forum</button>
-      </form>
+    <div
+      className="container d-flex justify-content-center align-items-center"
+      style={{ minHeight: "75vh" }}
+    >
+      <div
+        className="card shadow-md p-4 text-center mb-4"
+        style={{ width: "100%", maxWidth: "800px", maxHeight: "600px" }}
+      >
+        <h3 className="text-center mb-4">Create a New Post</h3>
+        <form onSubmit={handleSubmit}>
+          <label>Post Title</label>
+          <div className="mb-3">
+            <input
+              type="text"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="mb-3">
+            <label>Enter your text here... </label>
+            <textarea
+              name="body"
+              value={formData.body}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="post-image">
+              <input
+                type="file"
+                id="post-image"
+                accept="image/*"
+                onChange={(e) => setSelectedImage(e.target.files[0])}
+              />
+            </label>
+          </div>
+          <button type="submit">Post on Forum</button>
+        </form>
+      </div>
     </div>
   );
 };
