@@ -1,7 +1,7 @@
 from django.urls import path, include
 from ..views import views
 from rest_framework.routers import DefaultRouter
-from ..views.views import  register_user, ImageUploadView, ImageDeleteView, ProjectPostViewSet, get_project_images, get_projectpost_images,ProjectDeleteView, get_post_images, user_images_view, get_project_weather, UserCommentsView, UserMessagesView, UserPostsView, UserProjectsView,activate_user, password_reset_request, password_reset_confirm, get_project_weather__monthly_averages,ZoneViewSet, UserViewSet, PostViewSet, MessageViewSet, CommentViewSet, ProjectListView,  ProjectCreateView, ProjectDetailView, ProjectUpdateView, MyTokenObtainPairView
+from ..views.views import  register_user, contact_form, ImageUploadView, ImageDeleteView, ImageEnlargeList, ProjectPostViewSet, get_project_images, get_projectpost_images,ProjectDeleteView, get_post_images, user_images_view, get_project_weather, UserCommentsView, UserMessagesView, UserPostsView, UserProjectsView,activate_user, password_reset_request, password_reset_confirm, get_project_weather__monthly_averages,ZoneViewSet, UserViewSet, PostViewSet, MessageViewSet, CommentViewSet, ProjectListView,  ProjectCreateView, ProjectDetailView, ProjectUpdateView, MyTokenObtainPairView
 from ..urls.routes import getRoutes
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
@@ -45,11 +45,14 @@ urlpatterns = [
 
 
     path('register/', register_user, name="register"),
+    path('contact/', contact_form, name="contact"),
     path("activate/<str:uidb64>/<str:token>/", activate_user, name="activate"),
+
 
     path("password-reset/", password_reset_request, name="password_reset"),
     path("password-reset-confirm/<uidb64>/<token>/", password_reset_confirm, name="password_reset_confirm"),
 
+    path('images/<int:pk>/', ImageEnlargeList.as_view(), name='images' ),
     path('upload-image/', ImageUploadView.as_view(), name='upload-image' ),
     path('delete-image/<int:pk>/', ImageDeleteView.as_view(), name='delete-image' ),
     path("project-images/<int:project_id>/", get_project_images, name="project-images"),

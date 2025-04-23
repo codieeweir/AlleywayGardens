@@ -13,21 +13,22 @@ class UserSerializer(ModelSerializer):
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
-        validated_data["is_active"] = False  # Set user as inactive
+        validated_data["is_active"] = False  
         user = User.objects.create_user(**validated_data)
         return user
     
 
 class MessageSerializer(ModelSerializer):
+    users = UserSerializer(many=False, read_only=True, source="user") 
     class Meta:
         model = Message
-        fields = '__all__'
+        fields = ["id", "body", "updated", "created", "users", "user", "project"]
 
 class ProjectPostSerializer(serializers.ModelSerializer):
-
+    users = UserSerializer(many=False, read_only=True, source="user") 
     class Meta:
         model = ProjectPost
-        fields = '__all__'
+        fields = ["id", "body", "updated", "created", "user", "users", "project"]
 
 class ProjectSerializer(ModelSerializer):
     participants = serializers.PrimaryKeyRelatedField(
@@ -35,6 +36,7 @@ class ProjectSerializer(ModelSerializer):
     )  
     message = MessageSerializer(many=True, read_only=True, source="message_set") 
     post = ProjectPostSerializer(many=True, read_only=True, source="projectpost_set") 
+    user = UserSerializer(many=False, read_only=True, source="host") 
     class Meta:
         model = Project
         fields =[
@@ -49,7 +51,8 @@ class ProjectSerializer(ModelSerializer):
             "updated",
             "message",
             "post",
-            "host"
+            "host",
+            "user"
 
         ]
     
@@ -72,9 +75,10 @@ class ZoneSerializer(ModelSerializer):
 
 
 class CommentSerializer(ModelSerializer):
+    users = UserSerializer(many=False, read_only=True, source="user") 
     class Meta:
         model = Comment
-        fields = '__all__'
+        fields = ["id", "body", "updated", "created", "users", "user", "post"]
 
 class PostSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(many=True, read_only=True, source="comment")

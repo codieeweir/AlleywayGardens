@@ -32,6 +32,9 @@ from django.template.loader import render_to_string
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth.decorators import login_required
+from django.contrib.gis.db.models.functions import Area
+from django.contrib.gis.db.models import Sum
+from django.http import HttpResponseRedirect
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -179,10 +182,43 @@ class ProjectListView(generics.ListAPIView):
             
         return Response(serialized_data)
     
+@api_view(['POST'])
+def contact_form(request):
+
+    email = request.data.get('email')
+    name = request.data.get('name')
+    message_content = request.data.get('message')
+
+
+    current_site = get_current_site(request)
+    mail_subject = 'New Contact Form Submission'
+    message = render_to_string('base/contact_form.html', {
+            'name' : name,
+            'email': email,
+            'message' : message_content,
+            'domain': current_site.domain,
+
+    })
+    email = EmailMessage(mail_subject, message, to=['alleywaygardens@gmail.com'])
+    email.content_subtype ='html'
+    email.send()
+
+    return Response({'message': 'Your Email has been sent and we hope to respond within 48 hours'}, status=status.HTTP_201_CREATED)
+
 
 
 @api_view(['POST'])
 def register_user(request):
+
+    email = request.data.get('email')
+    username = request.data.get('username')
+
+    if User.objects.filter(email=email).exists():
+        return Response ({'error': 'Email is already in use'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if User.objects.filter(username=username).exists():
+        return Response ({'error': 'Username is already in use'}, status=status.HTTP_400_BAD_REQUEST)
+
     serializer = UserSerializer(data=request.data)
 
 
@@ -202,6 +238,7 @@ def register_user(request):
                 'token': token
         })
         email = EmailMessage(mail_subject, message, to=[user.email])
+        email.content_subtype ='html'
         email.send()
 
         return Response({'message': 'An email has been sent for verification.'}, status=status.HTTP_201_CREATED)
@@ -220,9 +257,9 @@ def activate_user(request, uidb64, token):
     if user is not None and token_generator.check_token(user, token):
         user.is_active = True
         user.save()
-        return Response({'message': 'Your account has been activated!'}, status=status.HTTP_200_OK)
+        return HttpResponseRedirect('http://localhost:3000/login?activated=true')
     else:
-        return Response({'message': 'Invalid activation link'}, status=status.HTTP_400_BAD_REQUEST)
+        return HttpResponseRedirect('http://localhost:3000/login?error=invalid-activation')
 
 @api_view(['POST'])
 def password_reset_request(request):
@@ -283,6 +320,17 @@ class ImageDeleteView(generics.DestroyAPIView):
     serializer_class = ImageUploadSerializer
     permission_classes = [permissions.AllowAny]
 
+class ImageEnlargeList(generics.ListAPIView):
+    queryset = Image.objects.all()
+    serializer_class = ImageUploadSerializer
+
+    def list(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        serialized_data = serializer.data
+            
+        return Response(serialized_data)
+
 @api_view(["GET"])
 def get_project_images(request, project_id):
     images = Image.objects.filter(object_id=project_id, content_type__model='project')
@@ -315,6 +363,7 @@ def get_projectpost_images(request, post_id):
     images = Image.objects.filter(object_id=post_id, content_type__model='projectpost')
     serializer = ImageUploadSerializer(images, many=True)
     return Response(serializer.data)
+
 
 
 # Setup API client with caching and retry logic
