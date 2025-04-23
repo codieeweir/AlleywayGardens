@@ -18,8 +18,12 @@ import PasswordResetConfirm from "./pages/PasswordResetConfirm";
 import ProjectsPage from "./pages/Projects";
 import EditProject from "./pages/EditProject";
 import EditProfile from "./pages/EditProfile";
+import GardenHub from "./pages/GardenHub";
+import PlantPage from "./pages/PlantPage";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
+import ProfileVisit from "./pages/ProfileVisit";
+import ContactPage from "./pages/ContactPage";
 
 function App() {
   const isAuthenticated = true;
@@ -34,11 +38,15 @@ function App() {
             <Route path="/create-post" element={<CreatePost />} />
             <Route path="/create-project" element={<CreateProject />} />
           </Route>
+          <Route path="/profile/:id" element={<ProfileVisit />} />
           <Route path="/" element={<Home />} />
           <Route path="/profileInformation" element={<EditProfile />} />
           <Route path="/projects/:id" element={<Projects />} />
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/projects-update" element={<EditProject />} />
+          <Route path="/garden-hub" element={<GardenHub />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/plant-page/:pid" element={<PlantPage />} />
           <Route path="/forum" element={<Forum />} />
           <Route path="/forum-post/:id" element={<ForumPost />} />
           <Route path="/login" element={<AuthPage />} />
