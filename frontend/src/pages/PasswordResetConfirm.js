@@ -29,19 +29,36 @@ const PasswordResetConfirm = () => {
   };
 
   return (
-    <div>
-      <h2>Reset your password</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="password"
-          placeholder="Enter your new Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Reset Password</button>
-      </form>
-      <p>{message}</p>
+    <div
+      className="container d-flex justify-content-center align-items-center"
+      style={{ minHeight: "75vh" }}
+    >
+      <div
+        className="card shadow-md p-4 text-center mb-4"
+        style={{ width: "100%", maxWidth: "400px" }}
+      >
+        <strong className="text-center mb-4">Reset Your Password</strong>
+        <form onSubmit={handleSubmit}>
+          <div>
+            <input
+              type="password"
+              placeholder="Enter your new Password..."
+              value={password}
+              style={{ width: "100%" }}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <button
+            className="btn btn-success"
+            type="submit"
+            style={{ marginTop: "20px" }}
+          >
+            Reset Password
+          </button>
+        </form>
+        <p>{message}</p>
+      </div>
     </div>
   );
 };

@@ -1,9 +1,7 @@
 import React, { useContext, useState } from "react";
-//import AuthContext from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const RegisterPage = () => {
-  //let { loginUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -42,49 +40,75 @@ const RegisterPage = () => {
   };
 
   return (
-    <div>
-      <h1>Sign up Now!</h1>
-      <form onSubmit={handleSubmit}>
-        <label>First name</label>
-        <input
-          type="text"
-          name="first_name"
-          value={formData.first_name}
-          onChange={handleChange}
-        />
-
-        <label>Surname</label>
-        <input
-          type="text"
-          name="last_name"
-          value={formData.last_name}
-          onChange={handleChange}
-        />
-
-        <label>Email</label>
-        <input
-          type="text"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-        />
-
-        <label>Username</label>
-        <input
-          type="text"
-          name="username"
-          value={formData.username}
-          onChange={handleChange}
-        />
-        <label>Password</label>
-        <input
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-        />
-        <button type="submit">Sign up</button>
-      </form>
+    <div
+      className="container d-flex justify-content-center align-items-center"
+      style={{ minHeight: "80vh" }}
+    >
+      <div
+        className="card shadow-md p-4 text-center mb-4"
+        style={{ width: "100%", maxWidth: "400px" }}
+      >
+        <h1>Sign up Now!</h1>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <label>First name</label>
+            <input
+              type="text"
+              name="first_name"
+              className="form-control"
+              value={formData.first_name}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="mb-3">
+            <label>Surname</label>
+            <input
+              type="text"
+              name="last_name"
+              className="form-control"
+              value={formData.last_name}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Email</label>
+            <input
+              type="text"
+              name="email"
+              value={formData.email}
+              className="form-control"
+              onChange={handleChange}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Username</label>
+            <input
+              type="text"
+              name="username"
+              className="form-control"
+              value={formData.username}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Password</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              className="form-control"
+              onChange={handleChange}
+            />
+          </div>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            style={{ backgroundColor: "green", borderColor: "green" }}
+          >
+            Sign up
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
