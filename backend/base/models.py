@@ -17,11 +17,11 @@ class Project(models.Model):
     host = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     zone = models.ForeignKey(Zone, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=200)
-    project_type = models.CharField(max_length=50, null=True)
+    project_type = models.CharField(max_length=50, null=False)
     description = models.TextField(null=True, blank= True)
     participants = models.ManyToManyField(User, related_name='participants', blank=True) 
-    location = models.PointField(srid=4326, null=True, blank=True, default=Point(-5.93012, 54.5973))
-    shape = models.GeometryField(srid=4326, null=True, blank=True)
+    location = models.PointField(srid=4326, null=False, blank=True, default=Point(-5.93012, 54.5973))
+    shape = models.GeometryField(srid=4326, null=False, blank=True)
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -34,7 +34,7 @@ class Project(models.Model):
 class ProjectPost(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=False, blank=True)
     body = models.TextField()
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
