@@ -46,7 +46,7 @@ const EditProject = () => {
     );
 
     if (response.ok) {
-      navigate("/");
+      navigate(`/projects/${id}`);
     } else {
       console.error("Failed to update project");
     }
