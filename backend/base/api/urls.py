@@ -1,11 +1,57 @@
-from django.urls import path, include
-from ..views import views
+from django.urls import path
 from rest_framework.routers import DefaultRouter
-from ..views.views import  register_user, contact_form, ImageUploadView, ImageDeleteView, ImageEnlargeList, ProjectPostViewSet, get_project_images, get_projectpost_images,ProjectDeleteView, get_post_images, user_images_view, get_project_weather, UserCommentsView, UserMessagesView, UserPostsView, UserProjectsView,activate_user, password_reset_request, password_reset_confirm, get_project_weather__monthly_averages,ZoneViewSet, UserViewSet, PostViewSet, MessageViewSet, CommentViewSet, ProjectListView,  ProjectCreateView, ProjectDetailView, ProjectUpdateView, MyTokenObtainPairView
-from ..urls.routes import getRoutes
+from .routes import getRoutes
+
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
+from .views.user_views import (
+    contact_form,
+    register_user,
+    activate_user,
+    password_reset_request,
+    password_reset_confirm,
+)
+from .views.project_views import (
+    ProjectCreateView, 
+    ProjectUpdateView,
+    ProjectDeleteView, 
+    ProjectDetailView, 
+    ProjectListView)
+
+from .views.viewset_views import (
+    ProjectPostViewSet,
+    ZoneViewSet,
+    UserViewSet,
+    PostViewSet,
+    MessageViewSet,
+    CommentViewSet,
+)
+
+from .views.weather_views import (
+    get_project_weather, 
+    get_project_weather__monthly_averages)
+
+from .views.auth_views import (MyTokenObtainPairView)
+
+from .views.image_views import (
+    ImageUploadView,
+    ImageDeleteView,
+    ImageEnlargeList,
+    get_project_images,
+    get_post_images,
+    user_images_view,
+    get_projectpost_images
+)
+
+from .views.fk_views import ( 
+    UserProjectsView, 
+    UserMessagesView,
+    UserCommentsView, 
+    UserPostsView)
+
+
+
 ## ViewSet routing
 router = DefaultRouter()
 router.register(r'users', UserViewSet)

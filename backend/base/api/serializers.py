@@ -60,11 +60,6 @@ class ProjectSerializer(ModelSerializer):
         data = super().to_representation(instance)
         data["participants"] = [{"id": user.id, "username": user.username} for user in instance.participants.all()]
         return data
-    
-    def get_participants(self, obj):
-        return [{"id": user.id, "username": user.username} for user in obj.participants.all()]
-
-
 
 
 
