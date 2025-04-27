@@ -7,7 +7,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(cls, user):
         token = super().get_token(user)
 
-        # Adding custom claims
+        # Adding custom fields to my tokens
         token['username'] = user.username
         token['firstname'] = user.first_name
         token['surname'] = user.last_name

@@ -6,7 +6,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
-from django.contrib.auth.tokens import default_token_generator as token_generator
+from django.contrib.auth.tokens import default_token_generator 
 from django.http import HttpResponseRedirect
 
 from base.models import User
@@ -57,7 +57,7 @@ def register_user(request):
 
         
         uid = urlsafe_base64_encode(force_bytes(user.pk))
-        token = token_generator.make_token(user)
+        token = default_token_generator.make_token(user)
 
         current_site = get_current_site(request)
         mail_subject = 'Activate your Account'
@@ -84,7 +84,8 @@ def activate_user(request, uidb64, token):
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
 
-    if user is not None and token_generator.check_token(user, token):
+
+    if user is not None and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
         return HttpResponseRedirect('http://localhost:3000/login?activated=true')
@@ -95,7 +96,7 @@ def activate_user(request, uidb64, token):
 def password_reset_request(request):
     email = request.data.get("email")
     if not email:
-        return Response({ "message" : "Email required"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({ "error" : "Email required"}, status=status.HTTP_400_BAD_REQUEST)
     
     try:
         user = User.objects.get(email=email)
@@ -103,7 +104,7 @@ def password_reset_request(request):
         return Response ({ "message" : "If this email exists, a link while arrive shortly"}, status=status.HTTP_200_OK)
     
     uid = urlsafe_base64_encode(force_bytes(user.pk))
-    token = token_generator.make_token(user)
+    token = default_token_generator.make_token(user)
 
     current_site = get_current_site(request).domain
     reset_url = f"http://localhost:3000/password-reset-confirm/{uid}/{token}"
@@ -121,9 +122,9 @@ def password_reset_confirm(request, uidb64, token):
         uid = force_bytes(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
     except (User.DoesNotExist, TypeError, ValueError, OverflowError):
-        return Response ({ "error" : "Invalid Rest Link"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response ({ "error" : "Invalid Reset Link"}, status=status.HTTP_400_BAD_REQUEST)
     
-    if not token_generator.check_token(user, token):
+    if not default_token_generator.check_token(user, token):
         return Response ({ "error" : "Invalid or Expired token"}, status=status.HTTP_400_BAD_REQUEST)
     
     new_password = request.data.get("password")

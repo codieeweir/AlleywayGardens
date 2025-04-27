@@ -21,16 +21,11 @@ class ImageDeleteView(generics.DestroyAPIView):
     serializer_class = ImageUploadSerializer
     permission_classes = [permissions.AllowAny]
 
-class ImageEnlargeList(generics.ListAPIView):
+class ImageEnlargeList(generics.RetrieveAPIView):
     queryset = Image.objects.all()
     serializer_class = ImageUploadSerializer
 
-    def list(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        serialized_data = serializer.data
-            
-        return Response(serialized_data)
+
 
 @api_view(["GET"])
 def get_project_images(request, project_id):

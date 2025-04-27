@@ -16,11 +16,19 @@ class UserFactory(factory.django.DjangoModelFactory):
         skip_postgeneration_save=True
 
     username = factory.Sequence(lambda n: f"user_{n}")
+    first_name = 'Testing'
+    last_name = 'Testing2'
     password = factory.PostGenerationMethodCall("set_password", "test")
     email = factory.Sequence(lambda n: f"user_{n}@example.com")
     is_superuser = True
     is_staff = False
     is_active = True
+
+    @factory.post_generation
+    def save_user(self, create, extracted, **kwargs):
+        if create:
+            self.save()
+
 
 class ZoneFactory(factory.django.DjangoModelFactory):
     class Meta:
