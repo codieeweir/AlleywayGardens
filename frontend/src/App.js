@@ -37,13 +37,13 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/create-post" element={<CreatePost />} />
             <Route path="/create-project" element={<CreateProject />} />
+            <Route path="/projects-update" element={<EditProject />} />
+            <Route path="/profileInformation" element={<EditProfile />} />
           </Route>
           <Route path="/profile/:id" element={<ProfileVisit />} />
           <Route path="/" element={<Home />} />
-          <Route path="/profileInformation" element={<EditProfile />} />
           <Route path="/projects/:id" element={<Projects />} />
           <Route path="/projects" element={<ProjectsPage />} />
-          <Route path="/projects-update" element={<EditProject />} />
           <Route path="/garden-hub" element={<GardenHub />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/plant-page/:pid" element={<PlantPage />} />
