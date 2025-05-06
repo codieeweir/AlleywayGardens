@@ -1,12 +1,12 @@
-import { useState, useEffect, useContext } from "react";
-import AuthContext from "../context/AuthContext";
-import placeholderImage from "../assets/placeholder-image.png";
+import { useState, useEffect } from "react";
 import ImageEnlargeModal from "./ImageEnlargeModal";
 
 const ForumPostPreviews = ({ postId }) => {
   const [images, setImages] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImageID, setSelectedImageID] = useState(null);
+
+  //  ## Gathering Images for Forum Posts
 
   const openModal = (imageID) => {
     setSelectedImageID(imageID);
@@ -42,6 +42,7 @@ const ForumPostPreviews = ({ postId }) => {
         {images.length > 0
           ? images.map((image) => (
               <div key={image.id} style={{ position: "relative" }}>
+                {/* Display specifics for the images */}
                 <img
                   key={image.id}
                   src={`http://127.0.0.1:8000${image.image}`}

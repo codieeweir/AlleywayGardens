@@ -10,6 +10,10 @@ from base.models import Project
 import json
 from django.http import JsonResponse, HttpResponseRedirect
 
+# Views for this data were found directly in API providers docs and were altered
+# to meet the requirements of the project 
+# 'https://open-meteo.com/en/docs'
+
 # Setup API client with caching and retry logic
 cache_session = requests_cache.CachedSession('.cache', expire_after=3600)
 retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
@@ -17,11 +21,10 @@ openmeteo = openmeteo_requests.Client(session=retry_session)
 
 def get_project_weather(request, project_id):
     try:
-        # Retrieve project and extract first coordinate from shape field
         project = Project.objects.get(id=project_id)
         shape_geojson = json.loads(GEOSGeometry(project.shape).geojson)
-        coordinates = shape_geojson["coordinates"][0][0]  # Extract first coordinate (Polygon assumption)
-        latitude, longitude = coordinates[1], coordinates[0]  # GeoJSON format: [longitude, latitude]
+        coordinates = shape_geojson["coordinates"][0][0]  
+        latitude, longitude = coordinates[1], coordinates[0]  
 
         # Open-Meteo API request parameters
         url = "https://api.open-meteo.com/v1/forecast"
@@ -36,7 +39,7 @@ def get_project_weather(request, project_id):
             "forecast_days": 7
         }
 
-        # Fetch weather data
+        
         responses = openmeteo.weather_api(url, params=params)
         response = responses[0]
 
@@ -58,7 +61,7 @@ def get_project_weather(request, project_id):
             "precipitation_hours": daily.Variables(6).ValuesAsNumpy()
         }
 
-        # Convert DataFrame to JSON response
+        
         daily_dataframe = pd.DataFrame(daily_data)
         print(daily_dataframe)
         return JsonResponse(daily_dataframe.to_dict(orient="records"), safe=False)
@@ -71,13 +74,13 @@ def get_project_weather(request, project_id):
 
 def get_project_weather__monthly_averages(request, project_id):
     try:
-        # Retrieve project and extract first coordinate from shape field
+        
         project = Project.objects.get(id=project_id)
         shape_geojson = json.loads(GEOSGeometry(project.shape).geojson)
-        coordinates = shape_geojson["coordinates"][0][0]  # Extract first coordinate (Polygon assumption)
-        latitude, longitude = coordinates[1], coordinates[0]  # GeoJSON format: [longitude, latitude]
+        coordinates = shape_geojson["coordinates"][0][0]  # specififc project location
+        latitude, longitude = coordinates[1], coordinates[0]  
 
-        # Open-Meteo API request parameters
+        
         url = "https://api.open-meteo.com/v1/forecast"
         params = {
             "latitude": latitude,
@@ -87,14 +90,12 @@ def get_project_weather__monthly_averages(request, project_id):
                 "uv_index_max", "precipitation_sum", "rain_sum", "precipitation_hours"
             ],
             "timezone": "auto",
-            "past_days": 31
+            "past_days": 31 ## pull data for last month 
         }
 
-        # Fetch weather data
         responses = openmeteo.weather_api(url, params=params)
         response = responses[0]
 
-        # Extract daily weather data
         daily = response.Daily()
         daily_data = {
             "date": pd.date_range(
@@ -111,8 +112,6 @@ def get_project_weather__monthly_averages(request, project_id):
             "rain_sum": daily.Variables(5).ValuesAsNumpy(),
             "precipitation_hours": daily.Variables(6).ValuesAsNumpy()
         }
-
-        # Convert DataFrame to JSON response
         daily_dataframe = pd.DataFrame(daily_data)
 
         monthly_averages = daily_dataframe.drop(columns=["date"]).mean().to_dict()

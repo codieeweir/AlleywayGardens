@@ -9,6 +9,7 @@ from django.core.files.base import ContentFile
 from PIL import Image as PILImage
 from io import BytesIO
 
+# Factories were discovered and created based on a turtoial here https://www.youtube.com/watch?v=n47VFgqG-E8
 
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:

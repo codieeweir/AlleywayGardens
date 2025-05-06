@@ -8,6 +8,7 @@ const MapController = ({ project }) => {
   useEffect(() => {
     if (!project?.shape) return;
 
+    // # Change map view to the projects exact location based on the first coordinate
     try {
       const shape = JSON.parse(project.shape);
       const coordinates = shape.coordinates[0][0];

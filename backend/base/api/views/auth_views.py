@@ -1,7 +1,9 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+## JWT token logic was learnt from https://www.youtube.com/watch?v=c0x_AaPjNCY and applied t project
 
+## Token serializer 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
@@ -14,5 +16,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         return token
     
+#Token View triggered with API endpoint 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer

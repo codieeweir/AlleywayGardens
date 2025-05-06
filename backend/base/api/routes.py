@@ -1,10 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.urls import URLPattern, URLResolver
-from django.http import JsonResponse
-from django.urls import get_resolver
-import json
 
+
+## Some Routes for the API so endpoints can be easily seen
 @api_view(['GET'])
 def getRoutes(request):
     routes = [

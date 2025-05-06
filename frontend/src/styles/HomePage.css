@@ -1,5 +1,5 @@
 .main-page-bg {
-  background-color: #f1f3ee; /* Sage green color */
+  background-color: #dce6ce; /* Sage green color */
   color: #fff; /* White text for contrast */
   padding: 20px;
   border-radius: 8px;
@@ -8,7 +8,7 @@
 /* Hero Section */
 .map-header-section {
   /* A different green shade for the hero */
-  background-color: #4e7a19;
+  background-color: #6d8a4b;
   text-align: center;
   padding: 50px 0;
   border-radius: 10px;
@@ -24,7 +24,7 @@
 
 /* Zones Section */
 .zones {
-  background-color: #a9d5bf; /* Light background to contrast */
+  background-color: #5b997a; /* Light background to contrast */
   padding: 30px 0;
 }
 
@@ -43,7 +43,7 @@
 
 /* Map Section */
 .map-section {
-  background-color: #d8d8d8;
+  background-color: #967171;
   padding: 50px 0;
 }
 
@@ -79,4 +79,9 @@
 .projects .btn-primary:hover {
   background-color: #4e7a19;
   border-color: #4e7a19;
+}
+
+.modal-dialog {
+  width: 60% !important;
+  max-width: none !important;
 }

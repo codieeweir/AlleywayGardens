@@ -16,9 +16,7 @@ import { Container, Row, Col, Card, Button, Form } from "react-bootstrap";
 
 const Projects = () => {
   let { user } = useContext(AuthContext);
-  const [project, setProject] = useState(null);
   const [newMessage, setNewMessage] = useState("");
-  const [participant, setParticipant] = useState("");
   const [newPost, setNewPost] = useState("");
   const { id } = useParams();
   const navigate = useNavigate();
@@ -27,13 +25,51 @@ const Projects = () => {
   const [editedPost, setEditedPost] = useState({ body: "" });
   const [editingPostID, setEditingPostID] = useState(null);
   const { authTokens } = useContext(AuthContext);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
+  const [project, setProject] = useState(null);
+
+  // GET request for the project information using the id
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/api/projects/${id}/`)
       .then((response) => response.json())
       .then((data) => setProject(data))
       .catch((error) => console.error("Error fetching projects :", error));
   }, [id]);
+
+  // Project Images refresh
+  const refreshImage = async (e) => {
+    try {
+      setRefreshTrigger((prev) => prev + 1);
+    } catch (error) {
+      console.error("Failed to refresh image:", error);
+    }
+  };
+
+  // Allow user to become host of an unclamied project
+  const updateHost = async (user_id) => {
+    const response = await fetch(
+      `http://127.0.0.1:8000/api/projects/update/${id}/`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authTokens?.access}`,
+        },
+        body: JSON.stringify({
+          host: user_id,
+        }),
+      }
+    );
+    if (response.ok) {
+      await fetch(`http://127.0.0.1:8000/api/projects/${id}/`);
+      alert("You are now the Project Host");
+    } else {
+      console.error("Failed to update project host");
+    }
+  };
+
+  // Messages Functionality
 
   const handleMessageSubmit = async (e) => {
     e.preventDefault();
@@ -47,7 +83,7 @@ const Projects = () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // Authorization:
+        Authorization: `Bearer ${authTokens?.access}`,
       },
       body: JSON.stringify({
         body: newMessage,
@@ -68,6 +104,31 @@ const Projects = () => {
     }
   };
 
+  const handleMessageDelete = async (messageID) => {
+    const response = await fetch(
+      `http://127.0.0.1:8000/api/messages/${messageID}/`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${authTokens?.access}`,
+        },
+      }
+    );
+
+    if (response.ok) {
+      setProject((prevProject) => ({
+        ...prevProject,
+        message: prevProject.message.filter(
+          (message) => message.id !== messageID
+        ),
+      }));
+      navigate(`/projects/${id}`);
+    } else {
+      console.error("Failed to delete project");
+    }
+  };
+
+  // projects delete
   const handleDelete = async (e) => {
     e.preventDefault();
 
@@ -75,6 +136,7 @@ const Projects = () => {
       `http://127.0.0.1:8000/api/projects/delete/${id}/`,
       {
         method: "DELETE",
+        Authorization: `Bearer ${authTokens?.access}`,
       }
     );
 
@@ -87,20 +149,7 @@ const Projects = () => {
 
   if (!project) return <h2>Loading...</h2>;
 
-  const handleMessageDelete = async (messageID) => {
-    const response = await fetch(
-      `http://127.0.0.1:8000/api/messages/${messageID}/`,
-      {
-        method: "DELETE",
-      }
-    );
-
-    if (response.ok) {
-      navigate(`/projects/${id}`);
-    } else {
-      console.error("Failed to delete project");
-    }
-  };
+  // Post Functionality
 
   const handlePostSubmit = async (e) => {
     e.preventDefault();
@@ -141,7 +190,7 @@ const Projects = () => {
           body: formData,
         });
       }
-
+      // updating live page to ensure quick refresh without re-render
       setProject((prevProject) => ({
         ...prevProject,
         post: [...(prevProject.post || []), postData],
@@ -158,6 +207,9 @@ const Projects = () => {
       `http://127.0.0.1:8000/api/projectposts/${postID}/`,
       {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${authTokens?.access}`,
+        },
       }
     );
 
@@ -183,7 +235,10 @@ const Projects = () => {
         `http://127.0.0.1:8000/api/projectposts/${postId}/`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authTokens?.access}`,
+          },
           body: JSON.stringify({
             body: editedPost,
             project: id,
@@ -231,6 +286,8 @@ const Projects = () => {
     }
   };
 
+  // Participants Functionaility
+
   const addParticipants = async (user_id) => {
     const participantData = { participants: [user_id] };
 
@@ -238,7 +295,10 @@ const Projects = () => {
       `http://127.0.0.1:8000/api/projects/update/${id}/`,
       {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authTokens?.access}`,
+        },
         body: JSON.stringify(participantData),
       }
     );
@@ -264,7 +324,10 @@ const Projects = () => {
       `http://127.0.0.1:8000/api/projects/update/${id}/`,
       {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authTokens?.access}`,
+        },
         body: JSON.stringify(participantData),
       }
     );
@@ -288,9 +351,22 @@ const Projects = () => {
       <Row>
         <Col md={8}>
           <Card className="mb-3 shadow-sm">
+            {/* Project info, map and images  */}
             <Card.Body>
               <h3>{project.name} </h3>
-              <p>Hosted By @{project.user.username}</p>
+              <p>
+                {project.project_type}{" "}
+                {project.user ? (
+                  <>
+                    Hosted By{" "}
+                    <a href={`/profile/${project.user.id}`}>
+                      @{project.user.username}
+                    </a>
+                  </>
+                ) : (
+                  `This Project does not currently have a host`
+                )}
+              </p>
               <p>{project.description}</p>
               <div className="mb-3">
                 <ProjectMap project={project} />
@@ -301,15 +377,24 @@ const Projects = () => {
           <Card className="mb-3 shadow-sm">
             <Card.Body>
               <h5>Project Images</h5>
-              <ProjectImages projectId={project.id} showSingle={false} />
+              <ProjectImages
+                key={refreshTrigger}
+                projectId={project.id}
+                showSingle={false}
+              />
               {user?.user_id === project?.host && (
                 <>
-                  <ImageUpload contentType="project" objectId={project.id} />
+                  <ImageUpload
+                    contentType="project"
+                    objectId={project.id}
+                    refreshImage={refreshImage}
+                  />
                 </>
               )}
             </Card.Body>
           </Card>
 
+          {/* Project Posts */}
           <Card className="mb-3 shadow-sm">
             <Card.Body>
               <h5>Project Posts</h5>
@@ -406,6 +491,7 @@ const Projects = () => {
           </Card>
         </Col>
 
+        {/* project participants box  */}
         <Col md={4}>
           <Card className="mb-3 shadow-sm">
             <Card.Body>
@@ -425,13 +511,25 @@ const Projects = () => {
                   {project.participants?.some(
                     (ptp) => ptp.id === user?.user_id
                   ) ? (
-                    <Button
-                      onClick={() => deleteParticipants(user.user_id)}
-                      className="mt-2"
-                      variant="danger"
-                    >
-                      Leave Project?
-                    </Button>
+                    <>
+                      <Button
+                        onClick={() => deleteParticipants(user.user_id)}
+                        className="mt-2"
+                        variant="danger"
+                      >
+                        Leave Project?
+                      </Button>
+
+                      {!project.host && (
+                        <Button
+                          onClick={() => updateHost(user.user_id)}
+                          className="mt-2"
+                          variant="warning"
+                        >
+                          Register As New Project Host?
+                        </Button>
+                      )}
+                    </>
                   ) : (
                     <Button
                       onClick={() => addParticipants(user.user_id)}
@@ -445,6 +543,8 @@ const Projects = () => {
               )}
             </Card.Body>
           </Card>
+
+          {/* Weather metrics boxes  */}
           <Card className="mb-3 shadow-sm">
             <Card.Body>
               <h5>Weather Metrics ☀️</h5>
@@ -457,6 +557,8 @@ const Projects = () => {
               <WeatherAverages project_id={project.id} />
             </Card.Body>
           </Card>
+
+          {/* Project Chat Box */}
           <Card className="mb-3 shadow-sm">
             <Card.Body>
               <h5>Project Chat Box</h5>
@@ -514,6 +616,7 @@ const Projects = () => {
             </Card.Body>
           </Card>
 
+          {/* Host fucntionality for update and delete */}
           {user?.user_id === project.host && (
             <>
               <Link to={`/projects-update?id=${project.id}`}>
@@ -531,6 +634,7 @@ const Projects = () => {
               <ConfirmModel
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
+                modelType="Project"
                 onConfirm={handleDelete}
               />
             </>

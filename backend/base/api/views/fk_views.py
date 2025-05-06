@@ -9,6 +9,8 @@ from base.models import Project, Post, Message, Comment
 
 from rest_framework import generics
 
+## The point of these view is to lookup object based on a specififc User easily
+## They are used mainly in things like the profiles recent activity
 
 class UserProjectsView(generics.ListAPIView):
     serializer_class = ProjectSerializer

@@ -65,7 +65,7 @@ class TestProjectViews:
         assert response.status_code == 200
         assert any(participant["id"] ==  new_participant.id for participant in response.data["participants"])
 
-    def test_project_update_name(self, api_client, project_factory, user_factory):
+    def test_project_update_name(self, api_client, project_factory):
         project = project_factory()
         
 

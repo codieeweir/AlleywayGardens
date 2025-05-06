@@ -7,7 +7,7 @@ from ...models import Image
 from ..serializers import ImageUploadSerializer
 
 
-## Image APIS
+## Image APIS for uploading Deleteing and englarging 
 
 class ImageUploadView(generics.CreateAPIView):
     serializer_class = ImageUploadSerializer
@@ -21,6 +21,7 @@ class ImageDeleteView(generics.DestroyAPIView):
     serializer_class = ImageUploadSerializer
     permission_classes = [permissions.AllowAny]
 
+## This view itself isnt enlarging anything its just whats called when a singular image is needed in the response 
 class ImageEnlargeList(generics.RetrieveAPIView):
     queryset = Image.objects.all()
     serializer_class = ImageUploadSerializer
@@ -39,6 +40,7 @@ def get_post_images(request, post_id):
     serializer = ImageUploadSerializer(images, many=True)
     return Response(serializer.data)
 
+## The only conent_type with PUT as the user profile is unique 
 @api_view(["GET", "PUT"])
 def user_images_view(request, user_id):
     if request.method == "GET":
@@ -46,8 +48,9 @@ def user_images_view(request, user_id):
         serializer = ImageUploadSerializer(images, many=True)
         return Response(serializer.data)
     elif request.method == "PUT":
-        image_instance = get_object_or_404(Image, object_id=user_id, content_type__model='user')
+        image_instance = get_object_or_404(Image, object_id=user_id, content_type__model='user') ## if the user is present, assign this to image instance
 
+    # update the image instance 
     serializer = ImageUploadSerializer(image_instance, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()

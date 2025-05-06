@@ -30,6 +30,7 @@ const WeatherAverages = ({ project_id }) => {
   if (error) return <p>Error: {error}</p>;
   if (!weatherData) return <p>No weather data available.</p>;
 
+  // Just some logic to tidy up the raw data for each field
   return (
     <div className="weather-metrics">
       <h3>Monthly Weather Metrics 🌦️</h3>

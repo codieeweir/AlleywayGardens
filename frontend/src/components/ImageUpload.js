@@ -2,7 +2,7 @@ import { useContext, useRef, useState } from "react";
 import AuthContext from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
-const ImageUpload = ({ contentType, objectId }) => {
+const ImageUpload = ({ contentType, objectId, refreshImage }) => {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
@@ -65,7 +65,7 @@ const ImageUpload = ({ contentType, objectId }) => {
   return (
     <div className="mb-3">
       <label htmlFor="fileInput" className="form-label">
-        Upload File
+        Upload Image
       </label>
       <div className="input-group">
         <input
@@ -77,7 +77,11 @@ const ImageUpload = ({ contentType, objectId }) => {
         />
         <button
           className="btn btn-success btn-sm"
-          onClick={handleUpload}
+          onClick={() => {
+            handleUpload();
+            // Triggers event in the main page to display image after upload
+            refreshImage();
+          }}
           disabled={uploading}
         >
           {uploading ? "Uploading..." : "Upload"}

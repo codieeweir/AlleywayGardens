@@ -2,6 +2,9 @@ import { createContext, useState, useEffect, children } from "react";
 import { jwtDecode } from "jwt-decode";
 import { Navigate, useNavigate } from "react-router-dom";
 
+// Tutorial of setting up an authcontext file was followed and altered to match project requirements
+// https://github.com/divanov11/refresh-token-interval
+
 const AuthContext = createContext();
 
 export default AuthContext;
@@ -20,6 +23,8 @@ export const AuthProvider = ({ children }) => {
   let [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
+
+  // Creating User Log in Mechanism
 
   let loginUser = async (e) => {
     e.preventDefault();
@@ -45,12 +50,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // User Log Out Mechanism
   let logoutUser = () => {
     setAuthTokens(null);
     setUser(null);
     localStorage.removeItem("authTokens");
   };
 
+  // Updating and refreshing token
   let updateToken = async () => {
     console.log("Update Token Called");
     let response = await fetch("http://localhost:8000/api/token/refresh", {
@@ -73,6 +80,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Data that will be avaiavle via the Auth Coext being accessed
   let contextData = {
     user: user,
     authTokens: authTokens,
@@ -80,6 +88,7 @@ export const AuthProvider = ({ children }) => {
     logoutUser: logoutUser,
   };
 
+  // Update the users token
   useEffect(() => {
     let fourMinutes = 1000 * 60 * 4;
     let interval = setInterval(() => {

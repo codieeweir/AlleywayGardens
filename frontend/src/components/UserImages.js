@@ -9,6 +9,8 @@ const UserImages = ({ user_id }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImageID, setSelectedImageID] = useState(null);
 
+  // Return the user image and place a placeholder if none is present yet
+
   const openModal = (imageID) => {
     setSelectedImageID(imageID);
     setIsModalOpen(true);
@@ -25,9 +27,7 @@ const UserImages = ({ user_id }) => {
         const response = await fetch(
           `http://127.0.0.1:8000/api/user-images/${user_id}/`,
           {
-            headers: {
-              // Authorization: `Bearer ${authTokens?.access}`,
-            },
+            headers: {},
           }
         );
         const data = await response.json();

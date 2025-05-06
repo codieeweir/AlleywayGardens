@@ -4,6 +4,8 @@ import Modal from "react-bootstrap/Modal";
 const ImageEnlargeModal = ({ imageID, isOpen, onClose }) => {
   const [image, setImage] = useState(null);
 
+  // Model used to enlarge images
+
   useEffect(() => {
     if (isOpen && imageID) {
       const fetchImage = async () => {

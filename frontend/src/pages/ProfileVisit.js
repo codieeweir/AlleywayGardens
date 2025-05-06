@@ -1,22 +1,18 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import AuthContext from "../context/AuthContext";
 import "./../styles/ProjectPage.css";
-import ImageUpload from "../components/ImageUpload";
 import UserImages from "../components/UserImages";
-import { useNavigate } from "react-router-dom";
 import ProjectImagePreviews from "../components/ImagePreview";
 import { useParams } from "react-router-dom";
 
 const ProfileVisit = () => {
-  let { user } = useContext(AuthContext);
   const [projects, setProjects] = useState([]);
   const [posts, setPosts] = useState([]);
   const { id } = useParams();
   const [comments, setComments] = useState([]);
   const [profile, setProfile] = useState(null);
-  const [images, setImages] = useState([]);
-  const { authTokens } = useContext(AuthContext);
+
+  // Similar fucntionality to the profile.js page, but without editing fucntion
 
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/api/users/${id}/`)
@@ -37,11 +33,6 @@ const ProfileVisit = () => {
     fetch(`http://127.0.0.1:8000/api/users/${id}/posts/`)
       .then((response) => response.json())
       .then((data) => setPosts(data))
-      .catch((error) => console.error("Error fetching projects :", error));
-
-    fetch(`http://127.0.0.1:8000/api/user-images/${id}/`)
-      .then((response) => response.json())
-      .then((data) => setImages(data))
       .catch((error) => console.error("Error fetching projects :", error));
   }, [id]);
 

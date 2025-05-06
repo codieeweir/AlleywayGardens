@@ -61,14 +61,15 @@ const EditProject = () => {
         className="card shadow-md p-4 text-center mb-4"
         style={{ width: "100%", maxWidth: "400px" }}
       >
-        <h2>Update Your Project</h2>
+        <h3 className="text-center mb-4">Update Your Project</h3>
         <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label>Project Name:</label>
+          <div className="mb-3 text-start">
+            <label className="form-label">Project Name:</label>
             <div>
               <input
                 type="text"
                 name="name"
+                className="form-control"
                 value={formData.name}
                 onChange={handleChange}
                 required
@@ -76,24 +77,26 @@ const EditProject = () => {
             </div>
           </div>
 
-          <div className="mb-3">
-            <label>Description:</label>
+          <div className="mb-3 text-start">
+            <label className="form-label">Description:</label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
+              className="form-control"
               required
             />
           </div>
 
-          <div className="mb-3">
-            <label>
+          <div className="mb-3 text-start">
+            <label className="form-label">
               Project Type:
               <div>
                 <select
                   name="project_type"
                   value={formData.project_type}
                   onChange={handleChange}
+                  className="form-control"
                   required
                 >
                   <option disabled value="">
@@ -108,7 +111,9 @@ const EditProject = () => {
               </div>
             </label>
           </div>
-          <button type="submit">Update Project</button>
+          <button type="submit" className="btn btn-success w-100 mt-3">
+            Update Project
+          </button>
         </form>
       </div>
     </div>

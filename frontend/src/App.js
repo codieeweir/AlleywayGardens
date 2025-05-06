@@ -33,6 +33,7 @@ function App() {
       <AuthProvider>
         <Navbar />
         <Routes>
+          {/* Private route set up to manage authentication and page access */}
           <Route element={<PrivateRoute isAuthenticated={isAuthenticated} />}>
             <Route path="/profile" element={<Profile />} />
             <Route path="/create-post" element={<CreatePost />} />

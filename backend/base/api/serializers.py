@@ -5,8 +5,10 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.auth.hashers import make_password
 from django.contrib.contenttypes.models import ContentType
 
+## Logic for building serializers was learnt and modified from this beginners course on Djnago REST Framework
+## https://dennisivy.teachable.com/p/django-beginners-course
+
 class UserSerializer(ModelSerializer):
-    # project = ProjectSerializer(many=True, read_only=True, source="project_set") 
     class Meta:
         model = User
         fields = ["id", "first_name", "last_name", "email", "username", "password"]
@@ -30,6 +32,7 @@ class ProjectPostSerializer(serializers.ModelSerializer):
         model = ProjectPost
         fields = ["id", "body", "updated", "created", "user", "users", "project"]
 
+
 class ProjectSerializer(ModelSerializer):
     participants = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(), many=True, required=False
@@ -37,6 +40,8 @@ class ProjectSerializer(ModelSerializer):
     message = MessageSerializer(many=True, read_only=True, source="message_set") 
     post = ProjectPostSerializer(many=True, read_only=True, source="projectpost_set") 
     user = UserSerializer(many=False, read_only=True, source="host") 
+    host = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    
     class Meta:
         model = Project
         fields =[
@@ -56,6 +61,8 @@ class ProjectSerializer(ModelSerializer):
 
         ]
     
+    ## to_representation logic discovered and modified from https://www.django-rest-framework.org/api-guide/relations/
+    
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data["participants"] = [{"id": user.id, "username": user.username} for user in instance.participants.all()]
@@ -69,11 +76,13 @@ class ZoneSerializer(ModelSerializer):
         fields = '__all__'
 
 
+
 class CommentSerializer(ModelSerializer):
     users = UserSerializer(many=False, read_only=True, source="user") 
     class Meta:
         model = Comment
         fields = ["id", "body", "updated", "created", "users", "user", "post"]
+
 
 class PostSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(many=True, read_only=True, source="comment")
@@ -81,6 +90,7 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ['id', 'user', 'title', 'project', 'zone', 'body', 'updated', 'created', 'comments' ]
+
 
 
 class ImageUploadSerializer(serializers.ModelSerializer):

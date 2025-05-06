@@ -2,9 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import AuthContext from "../context/AuthContext";
 import "./../styles/ProjectPage.css";
-import ImageUpload from "../components/ImageUpload";
 import UserImages from "../components/UserImages";
-import { useNavigate } from "react-router-dom";
 import ProjectImagePreviews from "../components/ImagePreview";
 
 const Profile = () => {
@@ -15,10 +13,8 @@ const Profile = () => {
   const [messages, setMessages] = useState([]);
   const [profile, setProfile] = useState(null);
   const [images, setImages] = useState([]);
-  const { authTokens } = useContext(AuthContext);
-  const [file, setFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const navigate = useNavigate();
+
+  // Use of the fk_views, pulling back data or each user
 
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/api/users/${user.user_id}/`)
@@ -45,59 +41,11 @@ const Profile = () => {
       .then((response) => response.json())
       .then((data) => setPosts(data))
       .catch((error) => console.error("Error fetching Posts :", error));
-
-    fetch(`http://127.0.0.1:8000/api/user-images/${user.user_id}/`)
-      .then((response) => response.json())
-      .then((data) => setImages(data))
-      .catch((error) => console.error("Error fetching Images :", error));
   }, [user.user_id]);
 
   if (!profile) {
     return <div>Loading...</div>;
   }
-
-  const handleUpdate = async () => {
-    if (!file) {
-      alert("Please select an image");
-      return;
-    }
-
-    setUploading(true);
-
-    const formData = new FormData();
-    formData.append("image", file);
-    formData.append("content_type", "user");
-    formData.append("object_id", parseInt(user.user_id));
-
-    console.log([...formData.entries()]);
-
-    try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/user-images/${user.user_id}/`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${authTokens?.access}`,
-          },
-          body: formData,
-        }
-      );
-
-      const responseData = await response.json();
-
-      if (response.ok) {
-        alert("Image Uploaded Sucesssfully");
-        setFile(null);
-      } else {
-        console.error("Upload Failed:", responseData);
-        alert("Upload Failed");
-      }
-    } catch (error) {
-      console.error("Error Uploading Image :", error);
-    } finally {
-      setUploading(false);
-    }
-  };
 
   return (
     <div className="container">
@@ -120,7 +68,7 @@ const Profile = () => {
           </Link>
         </div>
       </div>
-
+      {/* Recent activit section  */}
       <div className="row mt-5 align-items-start">
         <div className="col-md-8">
           <h2 className="text-center mb-4">Project List</h2>

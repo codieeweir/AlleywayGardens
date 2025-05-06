@@ -52,7 +52,7 @@ const WeatherMetrics = ({ project_id }) => {
           </button>
         ))}
       </div>
-
+      {/* Tidying up the data display to a cleaner format, as raw data is large and not summarised to a decimal place */}
       {selectedDay !== null && (
         <div className="weather-entry">
           <p>

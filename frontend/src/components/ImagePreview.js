@@ -11,6 +11,8 @@ const ProjectImagePreviews = ({ projectId }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImageID, setSelectedImageID] = useState(null);
 
+  // Create smaller image previews for project card, pulling the first image from the project to display
+
   const openModal = (imageID) => {
     setSelectedImageID(imageID);
     setIsModalOpen(true);

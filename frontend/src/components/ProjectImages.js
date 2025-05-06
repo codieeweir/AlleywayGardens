@@ -10,6 +10,8 @@ const ProjectImages = ({ projectId, refreshTrigger, showSingle }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImageID, setSelectedImageID] = useState(null);
 
+  // Displaying project images
+
   const openModal = (imageID) => {
     setSelectedImageID(imageID);
     setIsModalOpen(true);

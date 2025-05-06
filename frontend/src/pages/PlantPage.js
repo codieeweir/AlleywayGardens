@@ -7,7 +7,10 @@ const PlantPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Displaying information about each plant in a clear way, gained through a different version of the API with more detailed data
+
   const fetchPlantDetails = async () => {
+    // genertaed on the external webpage
     const apiKey = "8e30b454a84922b6c56b56806041330141134c2c";
 
     try {
@@ -15,6 +18,7 @@ const PlantPage = () => {
         `https://open.plantbook.io/api/v1/plant/detail/${pid}/`,
         {
           headers: {
+            //api key at top is used here
             Authorization: `Token ${apiKey}`,
           },
         }

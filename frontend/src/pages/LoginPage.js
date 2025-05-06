@@ -19,8 +19,9 @@ const AuthPage = () => {
         className="card shadow-md p-4 text-center mb-4"
         style={{ width: "100%", maxWidth: "400px" }}
       >
-        <h2 className="text-center mb-4">Login</h2>
+        <h2 className="text-center mb-4">Log in</h2>
         <div>
+          {/* if activation is in the url then display the appropriate text, this will be for log ins from email verification naviagtion */}
           {activated && (
             <strong style={{ color: "green" }}>
               Your account has been activated!

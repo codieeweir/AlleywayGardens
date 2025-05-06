@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 const ActivatePage = () => {
+  // Gathering the uid and tokens from the endpoint
   const { uid, token } = useParams();
   const navigate = useNavigate();
 

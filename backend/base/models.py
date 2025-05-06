@@ -67,7 +67,7 @@ class Post(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True)
+    project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, blank=True)
     zone = models.ForeignKey(Zone, on_delete=models.SET_NULL, null=True)
     body = models.TextField()
     updated = models.DateTimeField(auto_now=True)
@@ -100,6 +100,9 @@ class Comment(models.Model):
 def upload_to(instance, filename):
     return f"uploads/{instance.content_type.model}/{filename}"
 
+# They idea for a GFK for this model was discovered on reddit at 'https://www.reddit.com/r/PostgreSQL/comments/11o6mbz/how_do_you_setup_an_image_table_that_can_foreign/' 
+# and changed to apply to this model requirements
+
 class Image(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     image = models.ImageField(upload_to=upload_to)
@@ -111,3 +114,6 @@ class Image(models.Model):
 
     def __str__(self):
         return f"Image for {self.content_type.model} ID {self.object_id} uploaded by {self.user.username}"
+
+
+        

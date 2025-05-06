@@ -16,16 +16,11 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import L, { marker } from "leaflet";
 import { Link } from "react-router-dom";
 
-// Predefined zone coordinates for filtering
-const zoneCoordinates = {
-  "North Belfast": { centre: [54.63, -5.93], zoom: 14 },
-  "South Belfast": { centre: [54.56, -5.93], zoom: 14 },
-  "East Belfast": { centre: [54.597, -5.86], zoom: 14 },
-  "West Belfast": { centre: [54.597, -5.99], zoom: 14 },
-};
+// ## Functionailty of this map component was pulled from different exmaples in https://react-leaflet.js.org/docs/example-events/
+// and moulded to fit with the project scope
 
 // Default map view
-const defaultView = { centre: [54.6, -5.9], zoom: 13 };
+const defaultView = { centre: [54.6, -5.92], zoom: 12 };
 
 const markerIcons = {
   "Communal Garden": new L.Icon({
@@ -81,6 +76,7 @@ const Map = ({ projects, selectedZone }) => {
   const [goToUser, setGoToUser] = useState(false);
   const [showUser, setShowUser] = useState(false);
 
+  // Fetching greenspace data on page load
   useEffect(() => {
     fetch(
       "https://services7.arcgis.com/rVwbcvflURVxkV6s/arcgis/rest/services/Greenspace_3_view/FeatureServer/4/query?where=1%3D1&outFields=*&outSR=4326&f=geojson"
@@ -98,6 +94,7 @@ const Map = ({ projects, selectedZone }) => {
       return;
     }
 
+    // idea inspiration from here 'https://stackoverflow.com/questions/68802067/is-there-an-efficient-way-to-load-current-location-to-react-state'
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
@@ -112,6 +109,7 @@ const Map = ({ projects, selectedZone }) => {
     );
   };
 
+  // Map updater used to update the map view upon user location trigger
   const MapUpdater = ({ selectedZone }) => {
     const map = useMap();
 
@@ -122,13 +120,12 @@ const Map = ({ projects, selectedZone }) => {
       } else {
         return;
       }
-    }, [selectedZone, userLocation, goToUser, map]);
+    });
 
     return null;
   };
 
-  console.log(greenSpaces);
-
+  // How to handle both types of drawing tools
   const handleCreated = (e) => {
     const { layer, layerType } = e;
 
@@ -143,6 +140,7 @@ const Map = ({ projects, selectedZone }) => {
     setDrawnShapes([...drawnShapes, layer.toGeoJSON()]);
   };
 
+  // pointer tool showing marker, circle and popup on use
   function handleMarker(layer) {
     var latlng = layer.getLatLng();
 
@@ -166,10 +164,12 @@ const Map = ({ projects, selectedZone }) => {
     });
   }
 
+  // Handling the drawing tool to popup on completion
   function handleGeometry(layer) {
     var geometry = layer.toGeoJSON().geometry;
     var geometryJson = JSON.stringify(geometry);
 
+    // pulling central point of shape to display the marker by giving this as the location field
     var centroid = layer.getBounds().getCenter();
     var pointJson = JSON.stringify({
       type: "Point",
@@ -218,9 +218,10 @@ const Map = ({ projects, selectedZone }) => {
   return (
     <div className="position-relative">
       <div
-        className="position-absolute bottom-0 end-0 m-3 p-3 bg-light text-dark rounded shadow"
+        className="position-absolute top-0 end-0 m-3 p-3 bg-light text-dark rounded shadow"
         style={{ zIndex: 1000, padding: "10px", border: "1px solid #ccc" }}
       >
+        {/* Setting up toggle box  */}
         <div className="form-check">
           <input
             className="form-check-input"
@@ -284,6 +285,7 @@ const Map = ({ projects, selectedZone }) => {
         </div>
       </div>
 
+      {/* The actual map container */}
       <MapContainer
         center={defaultView.centre}
         zoom={defaultView.zoom}
@@ -293,9 +295,10 @@ const Map = ({ projects, selectedZone }) => {
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <MapUpdater selectedZone={selectedZone} />
 
+        {/* map drawing components */}
         <FeatureGroup>
           <EditControl
-            position="topright"
+            position="bottomright"
             onCreated={handleCreated}
             draw={{
               rectangle: false,
@@ -307,6 +310,8 @@ const Map = ({ projects, selectedZone }) => {
             }}
           />
         </FeatureGroup>
+
+        {/* Toggle functions  */}
 
         {showGreenSpaces && greenSpaces && (
           <GeoJSON

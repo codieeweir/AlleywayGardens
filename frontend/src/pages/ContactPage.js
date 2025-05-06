@@ -1,7 +1,6 @@
-import React, { useContext, useState } from "react";
-import AuthContext from "../context/AuthContext";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Container, Row, Col, Card, Button, Form } from "react-bootstrap";
+import React, { useState } from "react";
+
+import { Form } from "react-bootstrap";
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -9,7 +8,6 @@ const ContactPage = () => {
     email: "",
     message: "",
   });
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();

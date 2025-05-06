@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 const RegisterPage = () => {
   const navigate = useNavigate();
 
+  // Set empty form data to be appended
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",

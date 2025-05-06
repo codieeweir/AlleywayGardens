@@ -35,7 +35,8 @@ def contact_form(request):
 
     return Response({'message': 'Your Email has been sent and we hope to respond within 48 hours'}, status=status.HTTP_201_CREATED)
 
-
+# # The idea behind this logic was sparked from this github repo and used as inspiration to design the views
+# https://github.com/sibtc/simple-signup/blob/master/confirmation-email/mysite/core/views.py
 
 @api_view(['POST'])
 def register_user(request):
@@ -43,6 +44,7 @@ def register_user(request):
     email = request.data.get('email')
     username = request.data.get('username')
 
+## Ensure only one email per user 
     if User.objects.filter(email=email).exists():
         return Response ({'error': 'Email is already in use'}, status=status.HTTP_400_BAD_REQUEST)
     
@@ -54,8 +56,8 @@ def register_user(request):
 
     if serializer.is_valid():
         user = serializer.save()
-
         
+        ## genertae these for use in the activation link
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
 
@@ -81,16 +83,19 @@ def activate_user(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist): ## check if the link is valid 
         user = None
 
 
     if user is not None and default_token_generator.check_token(user, token):
-        user.is_active = True
+        user.is_active = True ##  when valid activation clicked, set the user to active so they can now log in 
         user.save()
         return HttpResponseRedirect('http://localhost:3000/login?activated=true')
     else:
         return HttpResponseRedirect('http://localhost:3000/login?error=invalid-activation')
+    
+
+
 
 @api_view(['POST'])
 def password_reset_request(request):
@@ -114,6 +119,7 @@ def password_reset_request(request):
     email_message = EmailMessage(mail_subject, message, to=[user.email])
     email_message.send()
 
+## Return this for security reasons so that others dont knwo if the email is linked to an account
     return Response ({ "message" : "If this email exists, a link while arrive shortly"}, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
@@ -127,6 +133,7 @@ def password_reset_confirm(request, uidb64, token):
     if not default_token_generator.check_token(user, token):
         return Response ({ "error" : "Invalid or Expired token"}, status=status.HTTP_400_BAD_REQUEST)
     
+    ## No password entered
     new_password = request.data.get("password")
     if not new_password:
         return Response ({ "error" : "Password is required"}, status=status.HTTP_400_BAD_REQUEST)

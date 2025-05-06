@@ -6,7 +6,9 @@ from rest_framework.response import Response
 from base.models import Project
 from ..serializers import ProjectSerializer
 
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
+## Return the details of a specific project 
 class ProjectDetailView(generics.RetrieveAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
@@ -28,6 +30,7 @@ class ProjectCreateView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
 
+        ## converting the data type to be able to store it in the database 
         shape_data = data.get("shape")
         if shape_data:
             data["shape"] = GEOSGeometry(str(shape_data))
@@ -39,6 +42,7 @@ class ProjectCreateView(generics.CreateAPIView):
 
                 data["location"] = GEOSGeometry(json.dumps(location_data))
 
+        ## store the participants id data util project is created then save it 
         participants_data = data.pop("participants", [])
         if isinstance(participants_data, int):
             participants_data = [participants_data]
@@ -87,6 +91,7 @@ class ProjectDeleteView(generics.DestroyAPIView):
             {'message': 'Project Deleted Successfully'}, status=status.HTTP_200_OK
         )
     
+## List all Projects
 class ProjectListView(generics.ListAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer

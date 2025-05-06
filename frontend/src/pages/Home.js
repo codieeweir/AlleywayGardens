@@ -6,10 +6,8 @@ import AuthContext from "../context/AuthContext";
 import Modal from "react-bootstrap/Modal";
 
 const Home = () => {
-  const [projects, setProjects] = useState([]);
-  const [zones, setZones] = useState([]);
-  const [selectedZone, setSelectedZone] = useState("");
   let { user } = useContext(AuthContext);
+  const [projects, setProjects] = useState([]);
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
@@ -17,21 +15,16 @@ const Home = () => {
       .then((response) => response.json())
       .then((data) => setProjects(data))
       .catch((error) => console.error("Error fetching projects:", error));
-
-    fetch("http://127.0.0.1:8000/api/zones/")
-      .then((response) => response.json())
-      .then((data) => setZones(data))
-      .catch((error) => console.error("Error fetching Zones:", error));
   }, []);
 
   return (
     <>
-      <div className="row g-4">
+      <div className="row g-3 rounded">
         <div
-          className="col-md-4 text-center p-4 rounded shadow-sm"
-          style={{ backgroundColor: "#A8D5BA" }}
+          className="text-center p-3 rounded shadow-md"
+          style={{ backgroundColor: "#b7ddba" }}
         >
-          <div className="d-flex flex-column align-items-center text-center h-100 justify-content-center p-3">
+          <div className="d-flex flex-column align-items-center text-center h-90 justify-content-center p-3">
             {user && (
               <h5 className="text-muted mb-2">Hello, {user.firstname}!</h5>
             )}
@@ -64,16 +57,14 @@ const Home = () => {
             </button>
           </div>
 
+          {/* using a bootstrap model to create a popup in the page rather than naviagtng away from the home page  */}
           <Modal
             show={showModal}
             onHide={() => setShowModal(false)}
             dialogClassName="modal-90w"
-            aria-labelledby="example-custom-modal-styling-title"
           >
             <Modal.Header closeButton>
-              <Modal.Title id="example-custom-modal-styling-title">
-                Getting Started
-              </Modal.Title>
+              <Modal.Title>Getting Started</Modal.Title>
             </Modal.Header>
             <Modal.Body>
               <h2>Welcome to the Alleyway Gardens Help Guide</h2>
@@ -81,15 +72,12 @@ const Home = () => {
                 This guide walks you through using the mapping tool to
                 investigate areas and create new projects in your community.
               </p>
-
-              {/* Section 1: Area Investigation */}
               <h3>1. Investigating Areas</h3>
               <p>
                 The map offers two main modes of interaction. The first is area
-                investigation — helping you explore spaces that may lack green
+                investigation, helping you explore spaces that may lack green
                 areas and identify opportunities for new projects.
               </p>
-
               <h4>Map Toggles</h4>
               <ul>
                 <li>
@@ -110,81 +98,68 @@ const Home = () => {
                   a 400m walkable radius.
                 </li>
               </ul>
-
               <img
-                src="path/to/map-toggles.gif"
+                src="/images/UserLocationGif.gif"
+                alt="Map toggles demo"
+                className="img-fluid rounded my-3"
+              />{" "}
+              <img
+                src="/images/GreenSpaceGif.gif"
                 alt="Map toggles demo"
                 className="img-fluid rounded my-3"
               />
-
               <h4>Using the Marker Tool</h4>
               <p>
                 Place a marker anywhere to check how accessible green space is
                 within a 400m radius.
               </p>
-
               <img
-                src="path/to/marker-tool-demo.gif"
+                src="/images/marker.gif"
                 alt="Using the marker tool"
                 className="img-fluid rounded my-3"
               />
-
               <h3>2. Creating a Project</h3>
               <p>
                 Use the drawing tool on the map to outline a space for your
                 project.
               </p>
-
               <h4>Using the Drawing Tool</h4>
               <p>
                 Click to drop points forming a shape. Close the shape to trigger
                 the project creation prompt.
               </p>
-
               <img
-                src="path/to/drawing-tool-demo.gif"
+                src="/images/draw.gif"
                 alt="Using the drawing tool"
                 className="img-fluid rounded my-3"
               />
-
               <p>
                 After confirming, you'll be taken to a form to provide project
                 details like name, type, and description.
               </p>
-
               <h4>Next Steps</h4>
               <p>
                 View your project on the map, collaborate with others, and track
                 progress as your garden grows.
               </p>
-
               <hr />
               <p className="text-muted">
-                Need more help? Visit our <a href="/faq">FAQ</a> or contact us
-                through the site.
+                Need more help? <a href="/contact">contact us</a>
               </p>
             </Modal.Body>
           </Modal>
         </div>
-
-        <div className="col-md-8 p-0">
-          <div className="card shadow-sm border-0 h-100">
-            <div className="card-body p-0 h-100">
-              <Map projects={projects} selectedZone={selectedZone} />
-            </div>
-          </div>
-        </div>
       </div>
 
-      <div className="row g-4 mt-4">
-        <div className="col-md-6">
+      <div className="row g-2 mt-4">
+        <div className="col-md-5">
           <div className="card shadow-sm border-0">
             <div className="card-body">
               <h4 className="text-dark font-weight-bold mb-3">
                 About Alleyway Gardens
               </h4>
               <p
-                className="text-dark"
+                className="text-dark align-cent"
                 style={{
                   fontSize: "1.15rem",
                   lineHeight: "1.8",
@@ -217,6 +192,31 @@ const Home = () => {
               >
                 Join us in cultivating a greener, more connected future.
               </p>
+              <p
+                className="text-dark"
+                style={{
+                  fontSize: "1.15rem",
+                  lineHeight: "1.8",
+                  fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                }}
+              >
+                On the map, you'll notice different colored markers that
+                represent various types of community projects. Blue markers
+                indicate Alleyway Gardens, green markers represent communal
+                spaces, and red markers show personal garden projects. These
+                markers help you easily identify different initiatives and
+                explore green spaces around you. Use the map to get started, and
+                for detailed instructions on how to interact with the map, be
+                sure to visit our how-to guide.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-7 p-0">
+          <div className="card shadow-sm border-0 h-100">
+            <div className="card-body p-0 h-100">
+              {/* Map component, with projects object passed  */}
+              <Map projects={projects} />
             </div>
           </div>
         </div>

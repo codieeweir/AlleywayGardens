@@ -9,6 +9,8 @@ const ProjectPostImages = ({ PostId, refreshTrigger }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImageID, setSelectedImageID] = useState(null);
 
+  // Image return componentfor project post images
+
   const openModal = (imageID) => {
     setSelectedImageID(imageID);
     setIsModalOpen(true);

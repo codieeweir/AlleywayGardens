@@ -26,6 +26,7 @@ const CreatePost = () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${authTokens?.access}`,
       },
       body: JSON.stringify(formData),
     });
@@ -33,6 +34,7 @@ const CreatePost = () => {
     if (response.ok) {
       const postData = await response.json();
 
+      // Image upload component isnt used here to allow image upload with submit button so need to set it here if present
       if (selectedImage) {
         const formData = new FormData();
         formData.append("image", selectedImage);
@@ -57,41 +59,51 @@ const CreatePost = () => {
       style={{ minHeight: "75vh" }}
     >
       <div
-        className="card shadow-md p-4 text-center mb-4"
+        className="card shadow p-4 text-center mb-4"
         style={{ width: "100%", maxWidth: "800px", maxHeight: "600px" }}
       >
         <h3 className="text-center mb-4">Create a New Post</h3>
         <form onSubmit={handleSubmit}>
-          <label>Post Title</label>
-          <div className="mb-3">
+          <div className="mb-3 text-start">
+            <label className="form-label">Post Title</label>
             <input
               type="text"
               name="title"
               value={formData.title}
               onChange={handleChange}
+              className="form-control"
               required
             />
           </div>
-          <div className="mb-3">
-            <label>Enter your text here... </label>
+
+          <div className="mb-3 text-start">
+            <label className="form-label">Enter your text here...</label>
             <textarea
               name="body"
               value={formData.body}
               onChange={handleChange}
+              className="form-control"
+              rows="5"
               required
             />
           </div>
-          <div className="mb-3">
-            <label htmlFor="post-image">
-              <input
-                type="file"
-                id="post-image"
-                accept="image/*"
-                onChange={(e) => setSelectedImage(e.target.files[0])}
-              />
+
+          <div className="mb-3 text-start">
+            <label className="form-label" htmlFor="post-image">
+              Upload an Image
             </label>
+            <input
+              type="file"
+              id="post-image"
+              accept="image/*"
+              onChange={(e) => setSelectedImage(e.target.files[0])}
+              className="form-control"
+            />
           </div>
-          <button type="submit">Post on Forum</button>
+
+          <button type="submit" className="btn btn-success w-100 mt-3">
+            Post on Forum
+          </button>
         </form>
       </div>
     </div>

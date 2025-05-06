@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { formatDistanceToNow } from "date-fns";
 import "./../styles/ProjectPage.css";
 import ProjectImagePreviews from "../components/ImagePreview";
+import { CardBody } from "react-bootstrap";
+import { Container, Row, Col, Card } from "react-bootstrap";
 
 const ProjectsPage = () => {
   const [projects, setProjects] = useState([]);
@@ -21,7 +22,8 @@ const ProjectsPage = () => {
 
   return (
     <section className="projects">
-      <div className="container">
+      <Container className="container">
+        {/* Project Type Filters */}
         <h2 className="text-center mb-4">Check Out Our Projects!</h2>
         <div className="d-flex justify-content-center gap-3 my-3">
           <button
@@ -65,12 +67,17 @@ const ProjectsPage = () => {
             Show All
           </button>
         </div>
-        <div className="row">
+        <Row className="row">
           {filteredProjects.map((project) => (
-            <div key={project.id} className="col-md-4 mb-4">
-              <div className="card shadow-sm">
-                <ProjectImagePreviews projectId={project.id} />
-                <div className="card-body">
+            <Col key={project.id} className="col-md-4 mb-4">
+              <Card className="w-100 h-100 shadow-sm d-flex flex-column">
+                <div
+                  className="card-img-top"
+                  style={{ height: "200px", overflow: "hidden" }}
+                >
+                  <ProjectImagePreviews projectId={project.id} />
+                </div>
+                <CardBody className="card-body">
                   <strong className="project-title">{project.name}</strong>
                   <p className="card-text">{project.description}</p>
                   <Link
@@ -79,12 +86,12 @@ const ProjectsPage = () => {
                   >
                     View Details
                   </Link>
-                </div>
-              </div>
-            </div>
+                </CardBody>
+              </Card>
+            </Col>
           ))}
-        </div>
-      </div>
+        </Row>
+      </Container>
     </section>
   );
 };
